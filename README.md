@@ -9,8 +9,9 @@ KSP-5046
 Layer Dependencies
 ==================
 
-- meta-games <git@github.com:cazfi/meta-games.git>
-- meta-doom <git@github.com:geoffrey-vl/meta-doom.git>
+- meta-games <https://github.com/phytec-labs/meta-games>
+- meta-doom <https://github.com/phytec-labs/meta-doom>
+- meta-retro <https://github.com/phytec-labs/meta-retro>
 
 Bluetooth Gamepad & Audio Support
 ==================================
