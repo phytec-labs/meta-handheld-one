@@ -1,8 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <manifest>
-	<phytec pdn="PD25.1.0" release_uid="BSP-Yocto-Ampliphy-AM62x-PD25.1.0" soc="AM62x" supported_builds="
-    phyboard-lyra-handheld-am62xx-3/meta-handheld-image/ampliphy
-  " bspextension="Ampliphy" build_container="phybuilder/yocto-ubuntu-22.04:phy5" />
+	<phytec pdn="PD25.1.0" release_uid="BSP-Yocto-Ampliphy-AM62x-PD25.1.0" soc="AM62x" supported_builds="phyboard-lyra-handheld-am62xx-3/meta-handheld-image/ampliphy" bspextension="Ampliphy" build_container="phybuilder/yocto-ubuntu-22.04:phy5" />
 
   <remote name="yocto" fetch="git://git.yoctoproject.org" />
 	<remote name="git.phytec" fetch="git://git.phytec.de" />
