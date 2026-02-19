@@ -51,6 +51,6 @@
 	<project name="meta-doom" path="sources/meta-doom" remote="github.phytec-labs" revision="scarthgap" />
 	<project name="meta-retro" path="sources/meta-retro" remote="github.phytec-labs" revision="scarthgap" />
 	<project name="meta-games" path="sources/meta-games" remote="github.phytec-labs" revision="scarthgap" />
-	<project name="meta-examples" path="sources/meta-examples" remote="github.tloan" revision="am62p-scarthgap-sdl2" />
+	<project name="meta-example" path="sources/meta-example" remote="github.tloan" revision="am62p-scarthgap-sdl2" />
 
 </manifest>
