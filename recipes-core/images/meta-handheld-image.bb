@@ -27,3 +27,6 @@ IMAGE_INSTALL:append = " \
 	${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'qtwayland qtwayland-plugins weston weston-init', '', d)} \
 	${@bb.utils.contains('DISTRO_FEATURES', 'x11 wayland', 'weston-xwayland', '', d)} \
 "
+
+# Disable Vulkan drivers if Vulkan is not supported by the hardware
+IMAGE_INSTALL:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'vulkan', '', 'mesa-vulkan-drivers', d)}"
