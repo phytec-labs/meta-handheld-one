@@ -8,6 +8,7 @@ IMAGE_FEATURES += "\
     splash \
     ssh-server-openssh \
     hwcodecs \
+    x11-base \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'weston', '', d)} \
 "
 
@@ -15,6 +16,7 @@ LICENSE = "MIT"
 
 IMAGE_INSTALL:append = " \
 	freedoom \
+	chocolate-doom \
 	supertuxkart \
 	neverball \
 	neverball-data \
