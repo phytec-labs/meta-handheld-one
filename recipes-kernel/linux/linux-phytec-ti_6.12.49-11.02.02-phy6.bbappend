@@ -5,5 +5,6 @@ SRC_URI:append = " \
 "
 
 COMPATIBLE_MACHINE  = "^("
-COMPATIBLE_MACHINE .=  "phyboard-lynx"
+COMPATIBLE_MACHINE .=  "phyboard-lyra"
+COMPATIBLE_MACHINE .= "|phyboard-lynx"
 COMPATIBLE_MACHINE .= ")$"
