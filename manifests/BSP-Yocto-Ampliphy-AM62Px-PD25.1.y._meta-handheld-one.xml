@@ -47,7 +47,7 @@
 		<sublayer path="meta-ti-extras"/>
 	</project>
 	<project name="meta-virtualization" path="sources/meta-virtualization" remote="yocto"/>
-		<project name="meta-handheld-one" path="sources/meta-handheld-one" remote="github.phytec-labs" revision="scarthgap" />
+	<project name="meta-handheld-one" path="sources/meta-handheld-one" remote="github.phytec-labs" revision="scarthgap" />
 	<project name="meta-doom" path="sources/meta-doom" remote="github.phytec-labs" revision="scarthgap" />
 	<project name="meta-retro" path="sources/meta-retro" remote="github.phytec-labs" revision="scarthgap" />
 	<project name="meta-games" path="sources/meta-games" remote="github.phytec-labs" revision="scarthgap" />
