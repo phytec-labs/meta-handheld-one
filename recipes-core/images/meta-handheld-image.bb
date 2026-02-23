@@ -8,7 +8,6 @@ IMAGE_FEATURES += "\
     splash \
     ssh-server-openssh \
     hwcodecs \
-    x11-base \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'weston', '', d)} \
 "
 
@@ -32,7 +31,7 @@ IMAGE_INSTALL:append = " \
 
 #deploy meta-example lvgl demo based on machine
 IMAGE_INSTALL:append:phyboard-lynx = " sdl2-am62p-ew-3d-demo"
-IMAGE_INSTALL:append:phyboard-lyra = " lvgl-am62l-ew-2d-demo"
+IMAGE_INSTALL:append:phyboard-lyra = " sdl2-am62p-ew-3d-demo"
 
 # Disable Vulkan drivers if Vulkan is not supported by the hardware
 IMAGE_INSTALL:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'vulkan', '', 'mesa-vulkan-drivers', d)}"
