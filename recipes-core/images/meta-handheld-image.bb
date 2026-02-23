@@ -19,6 +19,7 @@ IMAGE_INSTALL:append = " \
 	supertuxkart \
 	neverball \
 	neverball-data \
+	phytec-launcher \
 	\
 	packagegroup-base \
 	\
