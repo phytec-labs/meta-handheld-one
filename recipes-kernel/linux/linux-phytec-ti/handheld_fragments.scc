@@ -1,4 +1,4 @@
 define KFEATURE_DESCRIPTION "Enable Features needed to support bluetooth controllers"
 define KFEATURE_COMPATIBILITY board
 
-kconf non-hardware bluetooth_fragment.cfg
+kconf non-hardware handheld_fragments.cfg
