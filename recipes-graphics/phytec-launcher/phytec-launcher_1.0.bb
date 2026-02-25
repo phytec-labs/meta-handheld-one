@@ -4,14 +4,22 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 
 SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=https;branch=scarthgap \
            file://launcher.conf \
+           file://phytec-launcher.service \
+           file://phytec-launcher-start.sh \
            "
 
 SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "virtual/libsdl2 lvgl libdrm"
-RDEPENDS:${PN} = "libsdl2 lvgl libdrm"
+DEPENDS = "virtual/libsdl2 lvgl libdrm systemd"
+RDEPENDS:${PN} = "libsdl2 lvgl libdrm systemd"
+
+# Tell Yocto this recipe uses systemd
+inherit systemd
+
+SYSTEMD_SERVICE:${PN} = "phytec-launcher.service"
+SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
 do_compile() {
     ${CXX} ${CXXFLAGS} ${S}/src/main.cpp \
@@ -24,6 +32,7 @@ do_compile() {
 do_install() {
     install -d ${D}${bindir}
     install -m 0755 phytec-handheld-launcher ${D}${bindir}
+    install -m 0755 ${WORKDIR}/phytec-launcher-start.sh ${D}${bindir}
 
     install -d ${D}${sysconfdir}/phytec-launcher
     install -m 0644 ${WORKDIR}/launcher.conf \
@@ -32,4 +41,8 @@ do_install() {
     install -d ${D}/usr/share/phytec-launcher
     install -m 0644 ${S}/assets/loading.png \
                     ${D}/usr/share/phytec-launcher/loading.png
+
+    install -d ${D}${systemd_system_unitdir}
+    install -m 0644 ${WORKDIR}/phytec-launcher.service \
+                    ${D}${systemd_system_unitdir}/phytec-launcher.service
 }

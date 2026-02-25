@@ -1,0 +1,20 @@
+[Unit]
+Description=PHYTEC Game Launcher
+# Start after Weston is up and has created its socket
+After=weston.service
+Requires=weston.service
+
+[Service]
+Type=simple
+User=root
+# Use the wrapper script so environment is set correctly
+ExecStart=/usr/bin/phytec-launcher-start.sh
+Restart=on-failure
+RestartSec=3
+
+# If the launcher crashes, don't hammer the system
+StartLimitInterval=60
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target
