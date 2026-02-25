@@ -5,7 +5,6 @@ SUMMARY = "This image is designed to show the hardware and graphics capabilities
            of our handheld on wayland."
 
 IMAGE_FEATURES += "\
-    splash \
     ssh-server-openssh \
     hwcodecs \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'weston', '', d)} \

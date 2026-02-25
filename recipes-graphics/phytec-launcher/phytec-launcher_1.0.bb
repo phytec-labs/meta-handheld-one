@@ -4,7 +4,6 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 
 SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=https;branch=scarthgap \
            file://launcher.conf \
-           file://weston.ini \
            "
 
 SRCREV = "${AUTOREV}"
@@ -33,8 +32,4 @@ do_install() {
     install -d ${D}/usr/share/phytec-launcher
     install -m 0644 ${S}/assets/loading.png \
                     ${D}/usr/share/phytec-launcher/loading.png
-
-    install -d ${D}${sysconfdir}/xdg/weston
-    install -m 0644 ${WORKDIR}/weston.ini \
-                    ${D}${sysconfdir}/xdg/weston/weston.ini
 }
