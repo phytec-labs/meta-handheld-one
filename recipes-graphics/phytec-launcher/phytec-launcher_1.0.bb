@@ -2,7 +2,7 @@ SUMMARY = "LVGL 9.1 PHYTEC Handheld Launcher with SDL2"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=https;branch=scarthgap \
+SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=https;branch=claude/pedantic-hofstadter \
            file://launcher.conf \
            file://phytec-launcher.service \
            file://phytec-launcher-start.sh \
@@ -12,20 +12,27 @@ SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "virtual/libsdl2 lvgl libdrm systemd"
+DEPENDS = "virtual/libsdl2 lvgl libdrm libpng systemd"
 RDEPENDS:${PN} = "libsdl2 lvgl libdrm systemd"
 
-# Tell Yocto this recipe uses systemd
 inherit systemd
 
 SYSTEMD_SERVICE:${PN} = "phytec-launcher.service"
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
+require covers.inc
+
 do_compile() {
-    ${CXX} ${CXXFLAGS} ${S}/src/main.cpp \
+    ${CXX} ${CXXFLAGS} \
+        ${S}/src/main.cpp \
+        ${S}/src/config.cpp \
+        ${S}/src/launcher.cpp \
+        ${S}/src/input.cpp \
+        ${S}/src/ui.cpp \
         -I${STAGING_INCDIR} \
+        -I${S}/src \
         -o phytec-handheld-launcher \
-        -lSDL2 -llvgl -ldrm -lm \
+        -lSDL2 -llvgl -lpng -ldrm -lm \
         ${LDFLAGS}
 }
 
