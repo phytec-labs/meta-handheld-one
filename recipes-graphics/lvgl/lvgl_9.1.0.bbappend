@@ -13,5 +13,6 @@ do_configure:append() {
         -e "s|^([[:space:]]*#define LV_FS_POSIX_LETTER[[:space:]]).*|\1 'A'|" \
         -e "s|^([[:space:]]*#define LV_FS_POSIX_PATH[[:space:]]).*|\1 \"/\"|" \
         -e "s|^([[:space:]]*#define LV_USE_LIBPNG[[:space:]]).*|\1 1|" \
+        -e "s|^([[:space:]]*#define LV_FONT_MONTSERRAT_20[[:space:]]).*|\1 1|" \
         -i "${S}/lv_conf.h"
 }

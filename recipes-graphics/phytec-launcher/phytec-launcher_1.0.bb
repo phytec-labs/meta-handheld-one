@@ -31,6 +31,7 @@ do_compile() {
         ${S}/src/input.cpp \
         ${S}/src/ui.cpp \
         -I${STAGING_INCDIR} \
+        -I${STAGING_INCDIR}/lvgl \
         -I${S}/src \
         -o phytec-handheld-launcher \
         -lSDL2 -llvgl -lpng -ldrm -lm \
