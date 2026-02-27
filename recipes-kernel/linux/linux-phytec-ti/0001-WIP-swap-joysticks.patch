@@ -1,0 +1,41 @@
+From aa947c1ebd8108a2042e67affe2db60b2dfef313 Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Wed, 4 Mar 2026 09:11:35 -0800
+Subject: [PATCH] WIP swap joysticks
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 2c5d879f0b21..e43b534089b3 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -186,7 +186,7 @@ static int phyhandheld_read_data5(struct i2c_client *client, struct phyhandheld_
+ 
+ 	dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x\n",
+ 				read_buf[0], read_buf[1], read_buf[2], read_buf[3], read_buf[4]);
+-	
++
+ 	data->button_state = ~be16_to_cpu(read_buf[0]);
+ 
+ 	data->j1_ad1 = be16_to_cpu(read_buf[1]);
+@@ -365,10 +365,10 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 		}
+ 	}
+ 
+-    input_report_abs(input, ABS_X, data.j1_ad1);
+-    input_report_abs(input, ABS_Y, data.j1_ad2);
+-    input_report_abs(input, ABS_RX, data.j2_ad1);
+-    input_report_abs(input, ABS_RY, data.j2_ad2);
++	input_report_abs(input, ABS_RX, data.j1_ad1);
++	input_report_abs(input, ABS_RY, data.j1_ad2);
++	input_report_abs(input, ABS_X, data.j2_ad1);
++	input_report_abs(input, ABS_Y, data.j2_ad2);
+ 
+ 	input_sync(input);
+ 
+-- 
+2.43.0
+

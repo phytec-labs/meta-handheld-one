@@ -1,0 +1,52 @@
+From 7c87e8ba6666efacccf2deb54141feddd7373749 Mon Sep 17 00:00:00 2001
+From: John Ma <jma@phytec.com>
+Date: Tue, 24 Feb 2026 16:03:35 -0800
+Subject: [PATCH 3/6] add dss
+
+---
+ .../dts/ti/k3-am62p5-phyflex-phyhandheld.dts  | 29 +++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+index 5e69d7f4df4b..33967a5ca15e 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
++++ b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+@@ -146,6 +146,35 @@ AM62PX_IOPAD(0x0240, PIN_INPUT_PULLUP, 0) /* (D23) MMC1_SDCD */
+ 	};
+ };
+ 
++&dss0 {
++	status = "disabled";
++};
++
++&dss1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_dpi_pins_default>;
++	clocks = <&k3_clks 232 8>,
++		 <&k3_clks 232 0>,
++		 <&k3_clks 232 4>;
++
++	assigned-clocks = <&k3_clks 241 0>,	/* DSS1-VP0 */
++			  <&k3_clks 240 0>,	/* DSS1-VP1 */
++			  <&k3_clks 245 0>;	/* DPI Output */
++
++	assigned-clock-parents = <&k3_clks 241 2>,	/* PLL 17 HDMI */
++				 <&k3_clks 240 1>,	/* PLL 18 DSI */
++				 <&k3_clks 245 2>;	/* DSS1-DPI0 */
++
++	status = "okay";
++};
++
++&dss1_ports {
++	/* DSS1-VP0: DPI/HDMI Output */
++	port@0 {
++		reg = <0>;
++	};
++};
++
+ &main_i2c0 {	/* FPSC I2C2 */
+ 	clock-frequency = <400000>;
+ 	status = "okay";
+-- 
+2.43.0
+

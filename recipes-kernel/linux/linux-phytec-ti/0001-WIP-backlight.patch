@@ -1,0 +1,73 @@
+From 30938982d1390061e402f4dbd58b7d8415f5ef5c Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Fri, 27 Feb 2026 14:15:08 -0800
+Subject: [PATCH] WIP backlight
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ .../dts/ti/k3-am62p5-phyflex-phyhandheld.dts  | 26 +++++++++----------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+index b06de3c29a68..03a9f059787d 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
++++ b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+@@ -30,10 +30,10 @@ aliases {
+ 	backlight_dsi: backlight {
+ 		compatible = "pwm-backlight";
+ 		brightness-levels = <0 8 16 32 64 128 255>;
+-		default-brightness-level = <6>;
++		default-brightness-level = <4>;
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&bl_pwm_pins_default>;
+-		pwms = <&epwm1 0 50000 0>;
++		pinctrl-0 = <&ecap1_pins_default>;
++		pwms = <&ecap1 0 50000 0>;
+ 	};
+ 
+ 	can_tc0: can-phy0 {
+@@ -112,7 +112,7 @@ AM62PX_IOPAD(0x19c, PIN_INPUT, 6) /* (E24) MCASP0_AXR4.EHRPWM1_A */
+ 
+ 	ecap1_pins_default: ecap1-default-pins {
+ 		pinctrl-single,pins = <
+-			AM62PX_IOPAD(0x194, PIN_INPUT, 7) /* (D25) MCASP0_AXR3.ECAP1.GPIO1_7 */
++			AM62PX_IOPAD(0x194, PIN_INPUT, 5) /* (D25) MCASP0_AXR3.ECAP1.GPIO1_7 */
+ 		>;
+ 	};
+ 
+@@ -274,8 +274,8 @@ dss1_dpi1_out: endpoint {
+ };
+ 
+ &ecap1 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&ecap1_pins_default>;
++//	pinctrl-names = "default";
++//	pinctrl-0 = <&ecap1_pins_default>;
+ 	status = "okay";
+ };
+ 
+@@ -283,14 +283,14 @@ &epwm1 {
+ 	status = "okay";
+ };
+ 
+-&main_gpio1 {
+-	p7-hog {
++//&main_gpio1 {
++//	p7-hog {
+ 		/* Backlight Enable */
+-		gpio-hog;
+-		gpios = <7 GPIO_ACTIVE_HIGH>;
+-		output-high;
+-	};
+-};
++//		gpio-hog;
++//		gpios = <7 GPIO_ACTIVE_HIGH>;
++//		output-high;
++//	};
++//};
+ 
+ &main_i2c0 {	/* FPSC I2C2 */
+ 	clock-frequency = <400000>;
+-- 
+2.43.0
+

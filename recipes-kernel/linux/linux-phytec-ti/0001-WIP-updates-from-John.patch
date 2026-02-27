@@ -1,0 +1,77 @@
+From ba73aee201576dcc7230bcec98ac58c716852844 Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Tue, 3 Mar 2026 13:19:30 -0800
+Subject: [PATCH] WIP updates from John
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 32 ++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index ed8612ae8477..c487c07fff76 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -29,6 +29,7 @@
+ #define PHYHANDHELD_SWRST		0x0002
+ #define PHYHANDHELD_BUT_BITMAP		0x0003
+ #define PHYHANDHELD_ADC			0x0004
++#define PHYHANDHELD_READ_ALL	0x0005
+ 
+ #define PHYHANDHELD_R_BUT			0x4000
+ #define PHYHANDHELD_R_BUT1			0x2000
+@@ -169,6 +170,33 @@ static int phyhandheld_read_data4(struct i2c_client *client, struct phyhandheld_
+ 	return 0;
+ }
+ 
++static int phyhandheld_read_data5(struct i2c_client *client, struct phyhandheld_data *data)
++{
++	__be16 read_buf[5];
++	int err;
++
++	err = phyhandheld_register_write_u8(client, PHYHANDHELD_READ_ALL, PHYHANDHELD_READ_ALL);
++	if (err)
++		return err;
++
++	err = phyhandheld_register_read(client, PHYHANDHELD_READ_ALL,
++				   &read_buf, sizeof(read_buf));
++	if (err)
++		return err;
++
++	dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x\n",
++				read_buf[0], read_buf[1], read_buf[2], read_buf[3], read_buf[4]);
++	
++	data->button_state = ~be16_to_cpu(read_buf[0]);
++
++	data->j1_ad1 = be16_to_cpu(read_buf[1]);
++	data->j1_ad2 = be16_to_cpu(read_buf[2]);
++	data->j2_ad1 = be16_to_cpu(read_buf[3]);
++	data->j2_ad2 = be16_to_cpu(read_buf[4]);
++
++	return 0;
++}
++
+ static int phyhandheld_open(struct input_dev *input)
+ {
+ 	struct phyhandheld_gamepad *private = input_get_drvdata(input);
+@@ -204,7 +232,7 @@ static void phyhandheld_poll(struct input_dev *input)
+ 
+ 	dev_dbg(&input->dev, "phyhandheld_poll\n");
+ 
+-	err = phyhandheld_read_data4(private->i2c_client, &data);
++	err = phyhandheld_read_data5(private->i2c_client, &data);
+ 	if (err) {
+ 		dev_err_ratelimited(&input->dev,
+ 				    "failed to read joystick state: %d\n", err);
+@@ -279,7 +307,7 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 
+ 	dev_dbg(&input->dev, "phyhandheld_irq_thread\n");
+ 
+-	err = phyhandheld_read_data4(private->i2c_client, &data);
++	err = phyhandheld_read_data5(private->i2c_client, &data);
+ 	if (err) {
+ 		dev_err_ratelimited(&input->dev,
+ 				    "failed to read joystick state: %d\n", err);
+-- 
+2.43.0
+

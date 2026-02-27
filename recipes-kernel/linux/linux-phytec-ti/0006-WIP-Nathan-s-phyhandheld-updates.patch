@@ -1,0 +1,226 @@
+From 3bebc5c8c0a27568f7c8ae4765e6b7bbcb8863f7 Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Thu, 26 Feb 2026 16:36:32 -0800
+Subject: [PATCH 6/6] WIP: Nathan's phyhandheld updates
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ .../dts/ti/k3-am62p5-phyflex-phyhandheld.dts  | 142 +++++++++++++++++-
+ 1 file changed, 135 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+index 5d268f315ab7..b06de3c29a68 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
++++ b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+@@ -27,6 +27,15 @@ aliases {
+ 		usb1 = &usb1;
+ 	};
+ 
++	backlight_dsi: backlight {
++		compatible = "pwm-backlight";
++		brightness-levels = <0 8 16 32 64 128 255>;
++		default-brightness-level = <6>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&bl_pwm_pins_default>;
++		pwms = <&epwm1 0 50000 0>;
++	};
++
+ 	can_tc0: can-phy0 {
+ 		compatible = "ti,tcan1042";
+ 		#phy-cells = <0>;
+@@ -85,7 +94,7 @@ vdd_5v0: regulator-vdd-5v0 {
+ &main_pmx0 {
+ 	accel_irq_pins_default: accel-irq-default-pins {
+ 		pinctrl-single,pins = <
+-			AM62PX_IOPAD(0x0088, PIN_INPUT, 7) /* (R24) GPMC0_OEn_REn.GPIO0_33 */
++			AM62PX_IOPAD(0x04c, PIN_INPUT, 7) /* (T20) GPMC0_AD4.GPIO0_19 */
+ 		>;
+ 	};
+ 
+@@ -95,6 +104,18 @@ AM62PX_IOPAD(0x00a0, PIN_OUTPUT, 1) /* (P24) GPMC0_WPn.AUDIO_EXT_REFCLK1 */
+ 		>;
+ 	};
+ 
++	bl_pwm_pins_default: bl-pwm-pins-default {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x19c, PIN_INPUT, 6) /* (E24) MCASP0_AXR4.EHRPWM1_A */
++		>;
++	};
++
++	ecap1_pins_default: ecap1-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x194, PIN_INPUT, 7) /* (D25) MCASP0_AXR3.ECAP1.GPIO1_7 */
++		>;
++	};
++
+ 	main_dpi_pins_default: main-dpi-default-pins {
+ 		pinctrl-single,pins = <
+ 			AM62PX_IOPAD(0x0100, PIN_OUTPUT, 0) /* (W20) VOUT0_VSYNC */
+@@ -138,6 +159,14 @@ AM62PX_IOPAD(0x00a4, PIN_INPUT, 7) /* (P25) GPMC0_DIR.GPIO0_40 */
+ 		>;
+ 	};
+ 
++	/* Dummy pins needed by the driver but not actually used */
++	lcd197_pins_default: lcd197-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x1a0, PIN_INPUT, 7)       /* (E24) MCASP0_AXR0.GPIO1_10 */
++			AM62PX_IOPAD(0x198, PIN_INPUT, 7)       /* (E25) MCASP0_AXR2.GPIO1_8 */
++		>;
++	};
++
+ 	main_mmc1_pins_default: main-mmc1-default-pins {
+ 		pinctrl-single,pins = <
+ 			AM62PX_IOPAD(0x023c, PIN_INPUT_PULLUP, 0) /* (H20) MMC1_CMD */
+@@ -150,6 +179,65 @@ AM62PX_IOPAD(0x0240, PIN_INPUT_PULLUP, 0) /* (D23) MMC1_SDCD */
+ 		>;
+ 		bootph-all;
+ 	};
++
++	touch_screen_pins_default: touch-screen-pins-default {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x1f0, PIN_INPUT, 7) /* (C25) EXT_REFCLK1.GPIO1_30 */
++			AM62PX_IOPAD(0x088, PIN_INPUT, 7) /* (R24) GPMC0_OEn_REn.GPIO0_33 */
++		>;
++	};
++};
++
++&dphy_tx0 {
++	status = "okay";
++};
++
++&dsi0 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	status = "okay";
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@0 {
++			reg = <0>;
++
++			dsi0_out: endpoint {
++				remote-endpoint = <&display_in>;
++			};
++		};
++
++		port@1 {
++			reg = <1>;
++
++			dsi0_in: endpoint {
++				remote-endpoint = <&dss1_dpi1_out>;
++			};
++		};
++	};
++
++	display: panel@0 {
++		compatible = "lincolntech,lcd197";
++		reg = <0>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&lcd197_pins_default>;
++
++		/* is it in use? */
++		enable-gpios = <&main_gpio1 10 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&main_gpio1 8 GPIO_ACTIVE_LOW>;
++
++		backlight = <&backlight_dsi>;
++		dsi-lanes = <4>;
++		panel-bpc = <8>;
++
++		port {
++			display_in: endpoint {
++				remote-endpoint = <&dsi0_out>;
++			};
++		};
++	};
+ };
+ 
+ &dss0 {
+@@ -175,9 +263,32 @@ &dss1 {
+ };
+ 
+ &dss1_ports {
+-	/* DSS1-VP0: DPI/HDMI Output */
+-	port@0 {
+-		reg = <0>;
++	/* DSS1-VP1: DSI Output */
++	port@1 {
++		reg = <1>;
++
++		dss1_dpi1_out: endpoint {
++			remote-endpoint = <&dsi0_in>;
++		};
++	};
++};
++
++&ecap1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&ecap1_pins_default>;
++	status = "okay";
++};
++
++&epwm1 {
++	status = "okay";
++};
++
++&main_gpio1 {
++	p7-hog {
++		/* Backlight Enable */
++		gpio-hog;
++		gpios = <7 GPIO_ACTIVE_HIGH>;
++		output-high;
+ 	};
+ };
+ 
+@@ -208,11 +319,28 @@ &main_mcan0 {	/* FPSC CAN1 */
+ 
+ &main_i2c1 {	/* FPSC I2C3 */
+ 	clock-frequency = <100000>;
++	#address-cells = <1>;
++	#size-cells = <0>;
+ 	status = "okay";
+ 
+ 	/* M.2 */
+ 
+-	/* DISPLAU TP */
++	/* DISPLAY TP */
++	touchscreen@38 {
++		compatible = "focaltech,ft8201";
++		reg = <0x38>;
++
++		pinctrl-names = "default";
++		pinctrl-0 = <&touch_screen_pins_default>;
++
++		interrupt-parent = <&main_gpio1>;
++		interrupts = <30 IRQ_TYPE_EDGE_FALLING>;
++
++		touchscreen-size-x = <1080>;
++		touchscreen-size-y = <1920>;
++
++		reset-gpios = <&main_gpio0 33 GPIO_ACTIVE_LOW>;
++	};
+ };
+ 
+ &main_spi0 {	/* FPSC SPI1 */
+@@ -226,7 +354,7 @@ accelerometer@0 {
+ 		compatible = "adi,adxl345";
+ 		reg = <0>;
+ 		interrupt-parent = <&main_gpio0>;
+-		interrupts = <33 IRQ_TYPE_LEVEL_HIGH>;
++		interrupts = <19 IRQ_TYPE_LEVEL_HIGH>;
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&accel_irq_pins_default>;
+ 		spi-cpha;
+@@ -245,7 +373,7 @@ &main_uart1 {	/* FPSC UART3 */
+ 	bootph-all;
+ };
+ 
+-&mcu_i2c0 {		/* FPSC I2C4 */
++&main_i2c2 {		/* FPSC I2C4 */
+ 	clock-frequency = <400000>;
+ 	status = "okay";
+ 
+-- 
+2.43.0
+

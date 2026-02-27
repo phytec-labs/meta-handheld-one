@@ -1,0 +1,595 @@
+From 33576c7a3f29748a73e215d18162956d9b0f4f82 Mon Sep 17 00:00:00 2001
+From: John Ma <jma@phytec.com>
+Date: Tue, 24 Feb 2026 19:03:02 -0800
+Subject: [PATCH 5/6] add mspm0
+
+---
+ .../dts/ti/k3-am62p5-phyflex-phyhandheld.dts  |  17 +-
+ arch/arm64/configs/phytec_ti_defconfig        |   7 +
+ drivers/input/joystick/Kconfig                |  11 +
+ drivers/input/joystick/Makefile               |   1 +
+ drivers/input/joystick/phyhandheld.c          | 479 ++++++++++++++++++
+ 5 files changed, 514 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/input/joystick/phyhandheld.c
+
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+index 33967a5ca15e..5d268f315ab7 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
++++ b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+@@ -132,6 +132,12 @@ AM62PX_IOPAD(0x0050, PIN_INPUT, 7) /* (T21) GPMC0_AD5.GPIO0_20 */
+ 		>;
+ 	};
+ 
++	joystick_int_pins_default: joystick-int-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x00a4, PIN_INPUT, 7) /* (P25) GPMC0_DIR.GPIO0_40 */
++		>;
++	};
++
+ 	main_mmc1_pins_default: main-mmc1-default-pins {
+ 		pinctrl-single,pins = <
+ 			AM62PX_IOPAD(0x023c, PIN_INPUT_PULLUP, 0) /* (H20) MMC1_CMD */
+@@ -243,7 +249,16 @@ &mcu_i2c0 {		/* FPSC I2C4 */
+ 	clock-frequency = <400000>;
+ 	status = "okay";
+ 
+-	/* MSPM0 */
++	joystick@48 {
++		pinctrl-names = "default";
++		pinctrl-0 = <&joystick_int_pins_default>;
++		compatible = "phytec,phyhandheld-gamepad";
++		reg = <0x48>;
++
++		interrupt-parent = <&main_gpio0>;
++		interrupts = <43 IRQ_TYPE_EDGE_BOTH>;
++		irq-gpios = <&main_gpio0 40 GPIO_ACTIVE_LOW>;
++	};
+ };
+ 
+ &mcu_mcan0 {	/* FPSC CAN2 */
+diff --git a/arch/arm64/configs/phytec_ti_defconfig b/arch/arm64/configs/phytec_ti_defconfig
+index cb903f38afe2..011d0b521251 100644
+--- a/arch/arm64/configs/phytec_ti_defconfig
++++ b/arch/arm64/configs/phytec_ti_defconfig
+@@ -403,12 +403,19 @@ CONFIG_WWAN=m
+ CONFIG_MHI_WWAN_CTRL=m
+ CONFIG_MHI_WWAN_MBIM=m
+ CONFIG_INPUT_MATRIXKMAP=y
++CONFIG_INPUT_JOYDEV=m
+ CONFIG_INPUT_EVDEV=y
+ CONFIG_KEYBOARD_ADC=m
+ CONFIG_KEYBOARD_GPIO=y
+ CONFIG_KEYBOARD_GPIO_POLLED=m
+ CONFIG_KEYBOARD_MTK_PMIC=m
+ CONFIG_MOUSE_ELAN_I2C=m
++CONFIG_INPUT_JOYSTICK=y
++CONFIG_JOYSTICK_ANALOG=m
++CONFIG_JOYSTICK_PHYHANDHELD=m
++CONFIG_JOYSTICK_XPAD=m
++CONFIG_JOYSTICK_XPAD_FF=y
++CONFIG_JOYSTICK_XPAD_LEDS=y
+ CONFIG_INPUT_TOUCHSCREEN=y
+ CONFIG_TOUCHSCREEN_ATMEL_MXT=m
+ CONFIG_TOUCHSCREEN_GOODIX=m
+diff --git a/drivers/input/joystick/Kconfig b/drivers/input/joystick/Kconfig
+index 7755e5b454d2..817f2e58f1f0 100644
+--- a/drivers/input/joystick/Kconfig
++++ b/drivers/input/joystick/Kconfig
+@@ -291,6 +291,17 @@ config JOYSTICK_JOYDUMP
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called joydump.
+ 
++config JOYSTICK_PHYHANDHELD
++	tristate "PHYTEC Handheld One Gamepad"
++	depends on I2C
++	select INPUT_SPARSEKMAP
++	help
++	  Say Y here if you have an PHYTEC Handheld One Gamepad 
++	  connected to your system.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called phyhandheld.
++
+ config JOYSTICK_XPAD
+ 	tristate "Xbox gamepad support"
+ 	depends on USB_ARCH_HAS_HCD
+diff --git a/drivers/input/joystick/Makefile b/drivers/input/joystick/Makefile
+index 9976f596a920..7741a94177c1 100644
+--- a/drivers/input/joystick/Makefile
++++ b/drivers/input/joystick/Makefile
+@@ -25,6 +25,7 @@ obj-$(CONFIG_JOYSTICK_JOYDUMP)		+= joydump.o
+ obj-$(CONFIG_JOYSTICK_MAGELLAN)		+= magellan.o
+ obj-$(CONFIG_JOYSTICK_MAPLE)		+= maplecontrol.o
+ obj-$(CONFIG_JOYSTICK_N64)		+= n64joy.o
++obj-$(CONFIG_JOYSTICK_PHYHANDHELD)	+= phyhandheld.o
+ obj-$(CONFIG_JOYSTICK_PSXPAD_SPI)	+= psxpad-spi.o
+ obj-$(CONFIG_JOYSTICK_PXRC)		+= pxrc.o
+ obj-$(CONFIG_JOYSTICK_QWIIC)		+= qwiic-joystick.o
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+new file mode 100644
+index 000000000000..1bb110dc9239
+--- /dev/null
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -0,0 +1,479 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (C) 2026 John Ma <jma@phytec.com>
++ *
++ * Driver for PHYTEC Handheld One Gamepad
++ *
++ * TODO:
++ *	- Add interrupt support
++ */
++
++#define DEBUG
++//#define POLLING
++#define INTERRUPT
++
++#include <linux/unaligned.h>
++#include <linux/bits.h>
++#include <linux/delay.h>
++#include <linux/i2c.h>
++#include <linux/input.h>
++#include <linux/input/sparse-keymap.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
++
++#define PHYHANDHELD_DEVICE_NAME		"phyhandheld-gamepad"
++
++#define PHYHANDHELD_FW_VER		0x0001
++#define PHYHANDHELD_SWRST		0x0002
++#define PHYHANDHELD_BUT_BITMAP		0x0003
++#define PHYHANDHELD_ADC			0x0004
++
++#define PHYHANDHELD_R_BUT			0x4000
++#define PHYHANDHELD_R_BUT1			0x2000
++#define PHYHANDHELD_J1_SW			0x1000
++#define PHYHANDHELD_J2_SW			0x0800
++#define PHYHANDHELD_BUT				0x0400
++#define PHYHANDHELD_BUT1			0x0200
++#define PHYHANDHELD_BUT2			0x0100
++#define PHYHANDHELD_BUT3			0x0080
++#define PHYHANDHELD_BUT4			0x0040
++#define PHYHANDHELD_BUT5			0x0020
++#define PHYHANDHELD_BUT6			0x0010
++#define PHYHANDHELD_BUT7			0x0008
++#define PHYHANDHELD_BUT8			0x0004
++#define PHYHANDHELD_BUT9			0x0002
++#define PHYHANDHELD_BUT10			0x0001
++
++#define PHYHANDHELD_JOYSTICK_MAX_AXIS	0xfff
++#define PHYHANDHELD_JOYSTICK_FUZZ		2
++#define PHYHANDHELD_JOYSTICK_FLAT		4
++
++#define PHYHANDHELD_GAMEPAD_POLL_INTERVAL_MS	3000
++#define PHYHANDHELD_GAMEPAD_POLL_MIN		2000
++#define PHYHANDHELD_GAMEPAD_POLL_MAX		10000
++
++struct phyhandheld_gamepad {
++	struct input_dev *input_dev;
++	struct i2c_client *i2c_client;
++	u16 button_state;
++	u16 last_button_state;
++};
++
++struct phyhandheld_data {
++	u16 j1_ad1;
++	u16 j1_ad2;
++	u16 j2_ad1;
++	u16 j2_ad2;
++	u16 button_state;
++};
++
++static const struct key_entry phyhandheld_buttons_new[] = {
++	{ KE_KEY, PHYHANDHELD_R_BUT, .keycode = BTN_TL },
++	{ KE_KEY, PHYHANDHELD_R_BUT1, .keycode = BTN_TR },
++	{ KE_KEY, PHYHANDHELD_BUT, .keycode = BTN_Z },
++	{ KE_KEY, PHYHANDHELD_BUT1, .keycode = BTN_NORTH },
++	{ KE_KEY, PHYHANDHELD_BUT2, .keycode = BTN_WEST },
++	{ KE_KEY, PHYHANDHELD_BUT3, .keycode = BTN_SOUTH },
++	{ KE_KEY, PHYHANDHELD_BUT4, .keycode = BTN_EAST },
++	{ KE_KEY, PHYHANDHELD_BUT5, .keycode = BTN_THUMBL },
++	{ KE_KEY, PHYHANDHELD_BUT6, .keycode = BTN_MODE },
++	{ KE_KEY, PHYHANDHELD_BUT7, .keycode = BTN_SELECT },
++	{ KE_KEY, PHYHANDHELD_BUT8, .keycode = BTN_THUMBR },
++	{ KE_KEY, PHYHANDHELD_BUT9, .keycode = KEY_RECORD },
++	{ KE_KEY, PHYHANDHELD_BUT10, .keycode = BTN_START },
++	{ KE_END, 0 }
++};
++
++static int phyhandheld_register_write_u8(struct i2c_client *client, u16 reg,
++				    u8 value)
++{
++	u8 write_buf[sizeof(reg) + sizeof(value)];
++	int ret;
++
++	put_unaligned_be16(reg, write_buf);
++	write_buf[sizeof(reg)] = value;
++
++	ret = i2c_master_send(client, write_buf, sizeof(write_buf));
++	if (ret < 0)
++		return ret;
++
++	return 0;
++}
++
++static int phyhandheld_register_read(struct i2c_client *client, u16 reg, void *buf,
++				int count)
++{
++	__be16 register_buf = cpu_to_be16(reg);
++	struct i2c_msg message_buf[2] = {
++		{
++			.addr = client->addr,
++			.flags = client->flags,
++			.len = sizeof(register_buf),
++			.buf = (u8 *)&register_buf,
++		},
++		{
++			.addr = client->addr,
++			.flags = client->flags | I2C_M_RD,
++			.len = count,
++			.buf = (u8 *)buf,
++		},
++	};
++	int ret;
++
++	ret = i2c_transfer(client->adapter, message_buf,
++			   ARRAY_SIZE(message_buf));
++	if (ret < 0)
++		return ret;
++
++	return 0;
++}
++
++static int phyhandheld_read_data4(struct i2c_client *client, struct phyhandheld_data *data)
++{
++	__be16 read_buf[4];
++	int err;
++
++	err = phyhandheld_register_write_u8(client, PHYHANDHELD_BUT_BITMAP, PHYHANDHELD_BUT_BITMAP);
++	if (err)
++		return err;
++
++	err = phyhandheld_register_read(client, PHYHANDHELD_BUT_BITMAP,
++				   &read_buf, sizeof(read_buf));
++	if (err)
++		return err;
++
++	dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x\n",
++				read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
++	
++	data->button_state = ~be16_to_cpu(read_buf[0]);
++
++	err = phyhandheld_register_write_u8(client, PHYHANDHELD_ADC, PHYHANDHELD_ADC);
++	if (err)
++		return err;
++
++	err = phyhandheld_register_read(client, PHYHANDHELD_ADC,
++				   &read_buf, sizeof(read_buf));
++	if (err)
++		return err;
++
++	dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x\n",
++				read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
++
++	data->j1_ad1 = be16_to_cpu(read_buf[0]);
++	data->j1_ad2 = be16_to_cpu(read_buf[1]);
++	data->j2_ad1 = be16_to_cpu(read_buf[2]);
++	data->j2_ad2 = be16_to_cpu(read_buf[3]);
++
++	return 0;
++}
++
++static int phyhandheld_open(struct input_dev *input)
++{
++	struct phyhandheld_gamepad *private = input_get_drvdata(input);
++
++	private->last_button_state = 0;
++
++	return 0;
++}
++
++static int phyhandheld_button_handler(u16 button_state, u16 button_changed, u16 button_code, struct input_dev *input)
++{
++
++	if(button_changed & button_code) {
++		if(button_state & button_code) {
++			sparse_keymap_report_event(input, button_code, 1, false);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: 0x%x pressed\n", button_code);
++		}
++		else {
++			sparse_keymap_report_event(input, button_code, 0, false);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: 0x%x released\n", button_code);
++		}
++	}
++	return 0;
++} 
++
++#ifdef POLLING
++static void phyhandheld_poll(struct input_dev *input)
++{
++	struct phyhandheld_gamepad *private = input_get_drvdata(input);
++	struct phyhandheld_data data;
++	int err;
++	u16 button_changed;
++
++	dev_dbg(&input->dev, "phyhandheld_poll\n");
++
++	err = phyhandheld_read_data4(private->i2c_client, &data);
++	if (err) {
++		dev_err_ratelimited(&input->dev,
++				    "failed to read joystick state: %d\n", err);
++		return;
++	}
++
++	button_changed = private->last_button_state^data.button_state;
++
++
++	dev_dbg(&input->dev, "phyhandheld_poll: last_button_state 0x%x, data.button_state 0x%x, button_changed 0x%x\n",
++					private->last_button_state, data.button_state, button_changed);
++
++	dev_dbg(&input->dev, "phyhandheld_poll: data.j1_ad1 0x%x data.j1_ad2 0x%x\n",
++					data.j1_ad1, data.j1_ad2);
++
++	dev_dbg(&input->dev, "phyhandheld_poll: data.j2_ad1 0x%x data.j2_ad2 0x%x\n",
++					data.j2_ad1, data.j2_ad2);
++
++
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT10, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT9, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT7, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT6, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT4, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT3, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT2, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT1, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT1, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT, input);
++
++	if(button_changed & PHYHANDHELD_J2_SW) {
++		if(data.button_state & PHYHANDHELD_J2_SW) {
++		    input_report_abs(input, ABS_RZ, 0xff);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW pressed\n");
++		}
++		else {
++	    	input_report_abs(input, ABS_RZ, 0x0);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
++		}
++	}
++
++	if(button_changed & PHYHANDHELD_J1_SW) {
++		if(data.button_state & PHYHANDHELD_J1_SW) {
++		    input_report_abs(input, ABS_Z, 0xfff);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW pressed\n");
++		}
++		else {
++		    input_report_abs(input, ABS_Z, 0x0);		
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
++		}
++	}
++
++    input_report_abs(input, ABS_X, data.j1_ad1);
++    input_report_abs(input, ABS_Y, data.j1_ad2);
++    input_report_abs(input, ABS_RX, data.j2_ad1);
++    input_report_abs(input, ABS_RY, data.j2_ad2);
++
++	input_sync(input);
++
++	private->last_button_state = data.button_state;
++}
++#endif
++
++#ifdef INTERRUPT
++static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
++{
++	struct input_dev *input = (struct input_dev *)pdata;
++	struct phyhandheld_gamepad *private = input_get_drvdata(input);
++	struct phyhandheld_data data;
++	int err;
++	u16 button_changed;
++
++	dev_dbg(&input->dev, "phyhandheld_irq_thread\n");
++
++	err = phyhandheld_read_data4(private->i2c_client, &data);
++	if (err) {
++		dev_err_ratelimited(&input->dev,
++				    "failed to read joystick state: %d\n", err);
++		return IRQ_HANDLED;
++	}
++
++	button_changed = private->last_button_state^data.button_state;
++
++	dev_dbg(&input->dev, "phyhandheld_irq_thread: last_button_state 0x%x, data.button_state 0x%x, button_changed 0x%x\n",
++					private->last_button_state, data.button_state, button_changed);
++
++	dev_dbg(&input->dev, "phyhandheld_irq_thread: data.j1_ad1 0x%x data.j1_ad2 0x%x\n",
++					data.j1_ad1, data.j1_ad2);
++
++	dev_dbg(&input->dev, "phyhandheld_irq_thread: data.j2_ad1 0x%x data.j2_ad2 0x%x\n",
++					data.j2_ad1, data.j2_ad2);
++
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT10, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT9, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT7, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT6, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT4, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT3, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT2, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT1, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT1, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT, input);
++
++
++	if(button_changed & PHYHANDHELD_J2_SW) {
++		if(data.button_state & PHYHANDHELD_J2_SW) {
++		    input_report_abs(input, ABS_RZ, 0xff);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW pressed\n");
++		}
++		else {
++	    	input_report_abs(input, ABS_RZ, 0x0);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
++		}
++	}
++
++	if(button_changed & PHYHANDHELD_J1_SW) {
++		if(data.button_state & PHYHANDHELD_J1_SW) {
++		    input_report_abs(input, ABS_Z, 0xfff);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW pressed\n");
++		}
++		else {
++		    input_report_abs(input, ABS_Z, 0x0);		
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
++		}
++	}
++
++    input_report_abs(input, ABS_X, data.j1_ad1);
++    input_report_abs(input, ABS_Y, data.j1_ad2);
++    input_report_abs(input, ABS_RX, data.j2_ad1);
++    input_report_abs(input, ABS_RY, data.j2_ad2);
++
++	input_sync(input);
++
++	private->last_button_state = data.button_state;
++
++    return IRQ_HANDLED;
++}
++#endif
++
++static int phyhandheld_probe(struct i2c_client *client)
++{
++	struct phyhandheld_gamepad *phyhandheld;
++	u16 fw_ver[4];
++	int err;
++
++	err = phyhandheld_register_write_u8(client, PHYHANDHELD_SWRST, PHYHANDHELD_SWRST);
++	if (err)
++		return err;
++
++	/* Wait for the registers to reset before proceeding */
++	usleep_range(10000, 15000);
++
++	phyhandheld = devm_kzalloc(&client->dev, sizeof(*phyhandheld), GFP_KERNEL);
++	if (!phyhandheld)
++		return -ENOMEM;
++
++	err = phyhandheld_register_write_u8(client, PHYHANDHELD_FW_VER, PHYHANDHELD_FW_VER);
++	if (err)
++		return err;
++
++	err = phyhandheld_register_read(client, PHYHANDHELD_FW_VER,
++				   &fw_ver, sizeof(fw_ver));
++	if (err)
++		return err;
++
++	dev_dbg(&client->dev, "PHYTEC Handheld One Gamepad, Firmware Version: %x\n",
++		fw_ver[0]);
++
++	phyhandheld->i2c_client = client;
++
++	phyhandheld->input_dev = devm_input_allocate_device(&client->dev);
++	if (!phyhandheld->input_dev)
++		return -ENOMEM;
++
++	phyhandheld->input_dev->id.bustype = BUS_I2C;
++	phyhandheld->input_dev->name = "PHYTEC Handheld One Gamepad";
++	phyhandheld->input_dev->phys = "i2c/" PHYHANDHELD_DEVICE_NAME;
++	phyhandheld->input_dev->open = phyhandheld_open;
++	input_set_drvdata(phyhandheld->input_dev, phyhandheld);
++	input_set_abs_params(phyhandheld->input_dev, ABS_X,
++			     0, PHYHANDHELD_JOYSTICK_MAX_AXIS,
++			     PHYHANDHELD_JOYSTICK_FUZZ, PHYHANDHELD_JOYSTICK_FLAT);
++	input_set_abs_params(phyhandheld->input_dev, ABS_Y,
++			     0, PHYHANDHELD_JOYSTICK_MAX_AXIS,
++			     PHYHANDHELD_JOYSTICK_FUZZ, PHYHANDHELD_JOYSTICK_FLAT);
++	input_set_abs_params(phyhandheld->input_dev, ABS_RX,
++			     0, PHYHANDHELD_JOYSTICK_MAX_AXIS,
++			     PHYHANDHELD_JOYSTICK_FUZZ, PHYHANDHELD_JOYSTICK_FLAT);
++	input_set_abs_params(phyhandheld->input_dev, ABS_RY,
++			     0, PHYHANDHELD_JOYSTICK_MAX_AXIS,
++			     PHYHANDHELD_JOYSTICK_FUZZ, PHYHANDHELD_JOYSTICK_FLAT);
++
++	err = sparse_keymap_setup(phyhandheld->input_dev, phyhandheld_buttons_new, NULL);
++	if (err) {
++		dev_err(&client->dev,
++			"failed to set up input device keymap: %d\n", err);
++		return err;
++	}
++
++#ifdef POLLING
++	err = input_setup_polling(phyhandheld->input_dev, phyhandheld_poll);
++	if (err) {
++		dev_err(&client->dev, "failed to set up polling: %d\n", err);
++		return err;
++	}
++
++	input_set_poll_interval(phyhandheld->input_dev,
++				PHYHANDHELD_GAMEPAD_POLL_INTERVAL_MS);
++	input_set_max_poll_interval(phyhandheld->input_dev, PHYHANDHELD_GAMEPAD_POLL_MAX);
++	input_set_min_poll_interval(phyhandheld->input_dev, PHYHANDHELD_GAMEPAD_POLL_MIN);
++#endif
++
++	err = input_register_device(phyhandheld->input_dev);
++	if (err) {
++		dev_err(&client->dev, "failed to register joystick: %d\n", err);
++		return err;
++	}
++
++#ifdef INTERRUPT
++	{
++		int gpio, irq;
++		int ret;
++
++		gpio = of_get_named_gpio(client->dev.of_node, "irq-gpios", 0);
++		if (!gpio_is_valid(gpio))
++		    return -EINVAL;
++
++		devm_gpio_request_one(&client->dev, gpio, GPIOF_IN, "mspm0_irq");
++
++		irq = gpio_to_irq(gpio);
++
++		ret = devm_request_threaded_irq(&client->dev,
++                                irq,
++                                NULL,                 // no hard IRQ
++                                phyhandheld_irq_thread,  // threaded handler
++                                IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING | IRQF_ONESHOT,
++                                "mspm0_joystick",
++                                phyhandheld->input_dev);
++		if (ret)
++			return ret;
++	}
++#endif
++	dev_dbg(&client->dev, "PHYTEC Handheld One Gamepad initialized\n");
++
++	return 0;
++}
++
++static const struct i2c_device_id phyhandheld_id_table[] = {
++	{ PHYHANDHELD_DEVICE_NAME },
++	{ /* Sentinel */ }
++};
++MODULE_DEVICE_TABLE(i2c, phyhandheld_id_table);
++
++static const struct of_device_id phyhandheld_of_table[] = {
++	{ .compatible = "phytec,phyhandheld-gamepad"},
++	{ /* Sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, phyhandheld_of_table);
++
++static struct i2c_driver phyhandheld_driver = {
++	.driver = {
++		.name = PHYHANDHELD_DEVICE_NAME,
++		.of_match_table = phyhandheld_of_table,
++	},
++	.id_table = phyhandheld_id_table,
++	.probe = phyhandheld_probe,
++};
++module_i2c_driver(phyhandheld_driver);
++
++MODULE_AUTHOR("John Ma <jma@phytec.com>");
++MODULE_DESCRIPTION("PHYTEC Handheld One Gamepad driver");
++MODULE_LICENSE("GPL");
+-- 
+2.43.0
+

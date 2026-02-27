@@ -1,0 +1,287 @@
+From b2b7dc14272e46ddc8c2e463daca5bf8526d51a8 Mon Sep 17 00:00:00 2001
+From: John Ma <jma@phytec.com>
+Date: Tue, 24 Feb 2026 14:11:01 -0800
+Subject: [PATCH 2/6] phyhandheld support
+
+Signed-off-by: John Ma <jma@phytec.com>
+---
+ arch/arm64/boot/dts/ti/Makefile               |   1 +
+ .../dts/ti/k3-am62p5-phyflex-phyhandheld.dts  | 243 ++++++++++++++++++
+ arch/arm64/configs/phytec_ti_defconfig        |   2 +
+ 3 files changed, 246 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+
+diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
+index 92d70b68c72e..ecf0e84a877b 100644
+--- a/arch/arm64/boot/dts/ti/Makefile
++++ b/arch/arm64/boot/dts/ti/Makefile
+@@ -108,6 +108,7 @@ dtb-$(CONFIG_ARCH_K3) += k3-am62p5-sk-microtips-mf070zima-lcd3.dtbo
+ dtb-$(CONFIG_ARCH_K3) += k3-am62p5-sk-rpi-hdr-ehrpwm.dtbo
+ dtb-$(CONFIG_ARCH_K3) += k3-am62p5-phyboard-lynx.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am62p5-phyflex-libra-rdk.dtb
++dtb-$(CONFIG_ARCH_K3) += k3-am62p5-phyflex-phyhandheld.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am62p5-phyboard-lynx-oldi-lcd185.dtbo
+ dtb-$(CONFIG_ARCH_K3) += k3-am62p5-phyboard-lynx-vm016-mipi.dtbo
+ dtb-$(CONFIG_ARCH_K3) += k3-am62p5-phyboard-lynx-m2-cc3351.dtbo
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+new file mode 100644
+index 000000000000..5e69d7f4df4b
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+@@ -0,0 +1,243 @@
++// SPDX-License-Identifier: GPL-2.0-only OR MIT
++/*
++ * Copyright (C) 2026 PHYTEC America LLC
++ * Author: John Ma <jma@phytec.com>
++ *
++ */
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/leds/common.h>
++#include <dt-bindings/net/ti-dp83867.h>
++#include "k3-am62p5.dtsi"
++#include "k3-am62p-phyflex-fpsc-g-som.dtsi"
++
++/ {
++	compatible = "phytec,am62p5-phyflex-phyhandheld",
++		     "phytec,am62p-phyflex-fpsc-g", "ti,am62p5";
++	model = "phyFLEX-AM62P PHYHANDHELD ONE";
++
++	aliases {
++		ethernet1 = &cpsw_port2;
++		mmc1 = &sdhci1;
++		serial2 = &main_uart0;
++		serial3 = &main_uart1;
++		spi1 = &main_spi0;
++		usb0 = &usb0;
++		usb1 = &usb1;
++	};
++
++	can_tc0: can-phy0 {
++		compatible = "ti,tcan1042";
++		#phy-cells = <0>;
++		max-bitrate = <5000000>;
++	};
++
++	can_tc2: can-phy2 {
++		compatible = "ti,tcan1042";
++		#phy-cells = <0>;
++		max-bitrate = <5000000>;
++	};
++
++	can_tc3: can-phy3 {
++		compatible = "ti,tcan1042";
++		#phy-cells = <0>;
++		max-bitrate = <5000000>;
++	};
++
++	vdd_1v8: regulator-vdd-1v8 {
++		compatible = "regulator-fixed";
++		regulator-name = "VDD_1V8";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		regulator-always-on;
++		regulator-boot-on;
++	};
++
++	vdd_3v3: regulator-vdd-3v3 {
++		compatible = "regulator-fixed";
++		regulator-name = "VDD_3V3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-always-on;
++		regulator-boot-on;
++	};
++
++	vdd_3v3_mmc: regulator-vdd-3v3-mmc {
++		compatible = "regulator-fixed";
++		regulator-name = "VDD_3V3_MMC";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-always-on;
++		regulator-boot-on;
++	};
++
++	vdd_5v0: regulator-vdd-5v0 {
++		compatible = "regulator-fixed";
++		regulator-name = "VDD_5V0";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		regulator-always-on;
++		regulator-boot-on;
++	};
++};
++
++&main_pmx0 {
++	accel_irq_pins_default: accel-irq-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x0088, PIN_INPUT, 7) /* (R24) GPMC0_OEn_REn.GPIO0_33 */
++		>;
++	};
++
++	audio_ext_refclk1_pins_default: audio-ext-refclk1-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x00a0, PIN_OUTPUT, 1) /* (P24) GPMC0_WPn.AUDIO_EXT_REFCLK1 */
++		>;
++	};
++
++	main_dpi_pins_default: main-dpi-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x0100, PIN_OUTPUT, 0) /* (W20) VOUT0_VSYNC */
++			AM62PX_IOPAD(0x00f8, PIN_OUTPUT, 0) /* (AC20) VOUT0_HSYNC */
++			AM62PX_IOPAD(0x0104, PIN_OUTPUT, 0) /* (Y21) VOUT0_PCLK */
++			AM62PX_IOPAD(0x00fc, PIN_OUTPUT, 0) /* (W21) VOUT0_DE */
++			AM62PX_IOPAD(0x00b8, PIN_OUTPUT, 0) /* (AE24) VOUT0_DATA0 */
++			AM62PX_IOPAD(0x00bc, PIN_OUTPUT, 0) /* (W23) VOUT0_DATA1 */
++			AM62PX_IOPAD(0x00c0, PIN_OUTPUT, 0) /* (AA23) VOUT0_DATA2 */
++			AM62PX_IOPAD(0x00c4, PIN_OUTPUT, 0) /* (Y23) VOUT0_DATA3 */
++			AM62PX_IOPAD(0x00c8, PIN_OUTPUT, 0) /* (AB23) VOUT0_DATA4 */
++			AM62PX_IOPAD(0x00cc, PIN_OUTPUT, 0) /* (AD23) VOUT0_DATA5 */
++			AM62PX_IOPAD(0x00d0, PIN_OUTPUT, 0) /* (AC23) VOUT0_DATA6 */
++			AM62PX_IOPAD(0x00d4, PIN_OUTPUT, 0) /* (AE23) VOUT0_DATA7 */
++			AM62PX_IOPAD(0x00d8, PIN_OUTPUT, 0) /* (AE22) VOUT0_DATA8 */
++			AM62PX_IOPAD(0x00dc, PIN_OUTPUT, 0) /* (AC22) VOUT0_DATA9 */
++			AM62PX_IOPAD(0x00e0, PIN_OUTPUT, 0) /* (W22) VOUT0_DATA10 */
++			AM62PX_IOPAD(0x00e4, PIN_OUTPUT, 0) /* (AE21) VOUT0_DATA11 */
++			AM62PX_IOPAD(0x00e8, PIN_OUTPUT, 0) /* (AD21) VOUT0_DATA12 */
++			AM62PX_IOPAD(0x00ec, PIN_OUTPUT, 0) /* (AC21) VOUT0_DATA13 */
++			AM62PX_IOPAD(0x00f0, PIN_OUTPUT, 0) /* (AA20) VOUT0_DATA14 */
++			AM62PX_IOPAD(0x00f4, PIN_OUTPUT, 0) /* (Y20) VOUT0_DATA15 */
++		>;
++	};
++
++	gpio_exp0_int_pins_default: gpio-exp0-int-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x0044, PIN_INPUT, 7) /* (U20) GPMC0_AD2.GPIO0_17 */
++		>;
++	};
++
++	gpio_exp1_int_pins_default: gpio-exp1-int-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x0050, PIN_INPUT, 7) /* (T21) GPMC0_AD5.GPIO0_20 */
++		>;
++	};
++
++	main_mmc1_pins_default: main-mmc1-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x023c, PIN_INPUT_PULLUP, 0) /* (H20) MMC1_CMD */
++			AM62PX_IOPAD(0x0234, PIN_OUTPUT, 0) /* (J24) MMC1_CLK */
++			AM62PX_IOPAD(0x0230, PIN_INPUT_PULLUP, 0) /* (H21) MMC1_DAT0 */
++			AM62PX_IOPAD(0x022c, PIN_INPUT_PULLUP, 0) /* (H23) MMC1_DAT1 */
++			AM62PX_IOPAD(0x0228, PIN_INPUT_PULLUP, 0) /* (H22) MMC1_DAT2 */
++			AM62PX_IOPAD(0x0224, PIN_INPUT_PULLUP, 0) /* (H25) MMC1_DAT3 */
++			AM62PX_IOPAD(0x0240, PIN_INPUT_PULLUP, 0) /* (D23) MMC1_SDCD */
++		>;
++		bootph-all;
++	};
++};
++
++&main_i2c0 {	/* FPSC I2C2 */
++	clock-frequency = <400000>;
++	status = "okay";
++
++	audio_codec: audio-codec@18 {
++		pinctrl-names = "default";
++		pinctrl-0 = <&audio_ext_refclk1_pins_default>;
++		#sound-dai-cells = <0>;
++		compatible = "ti,tlv320aic3110";
++		reg = <0x18>;
++		ai31xx-micbias-vg = <2>;
++
++		HPVDD-supply = <&vdd_3v3>;
++		SPRVDD-supply = <&vdd_5v0>;
++		SPLVDD-supply = <&vdd_5v0>;
++		AVDD-supply = <&vdd_3v3>;
++		IOVDD-supply = <&vdd_3v3>;
++		DVDD-supply = <&vdd_1v8>;
++	};
++};
++
++&main_mcan0 {	/* FPSC CAN1 */
++	phys = <&can_tc0>;
++};
++
++&main_i2c1 {	/* FPSC I2C3 */
++	clock-frequency = <100000>;
++	status = "okay";
++
++	/* M.2 */
++
++	/* DISPLAU TP */
++};
++
++&main_spi0 {	/* FPSC SPI1 */
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	ti,pindir-d0-out-d1-in;
++	status = "okay";
++
++	accelerometer@0 {
++		compatible = "adi,adxl345";
++		reg = <0>;
++		interrupt-parent = <&main_gpio0>;
++		interrupts = <33 IRQ_TYPE_LEVEL_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&accel_irq_pins_default>;
++		spi-cpha;
++		spi-cpol;
++		spi-max-frequency = <5000000>;
++	};
++};
++
++&main_uart0 {	/* FPSC UART1 */
++	bootph-all;
++	status = "okay";
++};
++
++&main_uart1 {	/* FPSC UART3 */
++	status = "okay";
++	bootph-all;
++};
++
++&mcu_i2c0 {		/* FPSC I2C4 */
++	clock-frequency = <400000>;
++	status = "okay";
++
++	/* MSPM0 */
++};
++
++&mcu_mcan0 {	/* FPSC CAN2 */
++	phys = <&can_tc2>;
++};
++
++&mcu_mcan1 {	/* FPSC CAN3 */
++	phys = <&can_tc3>;
++};
++
++&mcu_uart0 {	/* FPSC UART2 */
++     status = "okay";
++
++	/* M.2 */
++};
++
++&sdhci1 {
++	vmmc-supply = <&vdd_3v3_mmc>;
++	vqmmc-supply = <&vddshv5_sdio>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_mmc1_pins_default>;
++	disable-wp;
++	no-1-8-v;
++	bootph-all;
++	status = "okay";
++};
+diff --git a/arch/arm64/configs/phytec_ti_defconfig b/arch/arm64/configs/phytec_ti_defconfig
+index c17cdea9e970..418069b8aa68 100644
+--- a/arch/arm64/configs/phytec_ti_defconfig
++++ b/arch/arm64/configs/phytec_ti_defconfig
+@@ -986,3 +986,5 @@ CONFIG_CORESIGHT_STM=m
+ CONFIG_CORESIGHT_CPU_DEBUG=m
+ CONFIG_CORESIGHT_CTI=m
+ CONFIG_MEMTEST=y
++CONFIG_ADXL345=y
++CONFIG_ADXL345_SPI=y
+-- 
+2.43.0
+

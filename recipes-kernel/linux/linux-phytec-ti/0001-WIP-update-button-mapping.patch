@@ -1,0 +1,126 @@
+From 818c61916c3a700c3da9943b58125b58cf1fc530 Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Fri, 27 Feb 2026 13:10:33 -0800
+Subject: [PATCH] WIP update button mapping
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 42 ++++++++++++++++------------
+ 1 file changed, 24 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 1bb110dc9239..e070d2060150 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -70,18 +70,18 @@ struct phyhandheld_data {
+ };
+ 
+ static const struct key_entry phyhandheld_buttons_new[] = {
+-	{ KE_KEY, PHYHANDHELD_R_BUT, .keycode = BTN_TL },
+-	{ KE_KEY, PHYHANDHELD_R_BUT1, .keycode = BTN_TR },
+-	{ KE_KEY, PHYHANDHELD_BUT, .keycode = BTN_Z },
+-	{ KE_KEY, PHYHANDHELD_BUT1, .keycode = BTN_NORTH },
++	{ KE_KEY, PHYHANDHELD_R_BUT, .keycode = BTN_TR },
++	{ KE_KEY, PHYHANDHELD_R_BUT1, .keycode = BTN_TL },
++	{ KE_KEY, PHYHANDHELD_BUT, .keycode = BTN_NORTH },
++	{ KE_KEY, PHYHANDHELD_BUT1, .keycode = BTN_EAST },
+ 	{ KE_KEY, PHYHANDHELD_BUT2, .keycode = BTN_WEST },
+ 	{ KE_KEY, PHYHANDHELD_BUT3, .keycode = BTN_SOUTH },
+-	{ KE_KEY, PHYHANDHELD_BUT4, .keycode = BTN_EAST },
+-	{ KE_KEY, PHYHANDHELD_BUT5, .keycode = BTN_THUMBL },
+-	{ KE_KEY, PHYHANDHELD_BUT6, .keycode = BTN_MODE },
+-	{ KE_KEY, PHYHANDHELD_BUT7, .keycode = BTN_SELECT },
+-	{ KE_KEY, PHYHANDHELD_BUT8, .keycode = BTN_THUMBR },
+-	{ KE_KEY, PHYHANDHELD_BUT9, .keycode = KEY_RECORD },
++	{ KE_KEY, PHYHANDHELD_BUT4, .keycode = BTN_DPAD_DOWN },
++	{ KE_KEY, PHYHANDHELD_BUT5, .keycode = BTN_DPAD_RIGHT },
++	{ KE_KEY, PHYHANDHELD_BUT6, .keycode = BTN_DPAD_UP },
++	{ KE_KEY, PHYHANDHELD_BUT7, .keycode = BTN_DPAD_LEFT },
++	{ KE_KEY, PHYHANDHELD_BUT8, .keycode = KEY_HOME },
++	{ KE_KEY, PHYHANDHELD_BUT9, .keycode = BTN_SELECT },
+ 	{ KE_KEY, PHYHANDHELD_BUT10, .keycode = BTN_START },
+ 	{ KE_END, 0 }
+ };
+@@ -146,7 +146,7 @@ static int phyhandheld_read_data4(struct i2c_client *client, struct phyhandheld_
+ 
+ 	dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x\n",
+ 				read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
+-	
++
+ 	data->button_state = ~be16_to_cpu(read_buf[0]);
+ 
+ 	err = phyhandheld_register_write_u8(client, PHYHANDHELD_ADC, PHYHANDHELD_ADC);
+@@ -192,7 +192,7 @@ static int phyhandheld_button_handler(u16 button_state, u16 button_changed, u16
+ 		}
+ 	}
+ 	return 0;
+-} 
++}
+ 
+ #ifdef POLLING
+ static void phyhandheld_poll(struct input_dev *input)
+@@ -226,12 +226,15 @@ static void phyhandheld_poll(struct input_dev *input)
+ 
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT10, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT9, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT8, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT7, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT6, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT5, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT4, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT3, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT2, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT1, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT1, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT, input);
+ 
+@@ -252,15 +255,15 @@ static void phyhandheld_poll(struct input_dev *input)
+ 			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW pressed\n");
+ 		}
+ 		else {
+-		    input_report_abs(input, ABS_Z, 0x0);		
++		    input_report_abs(input, ABS_Z, 0x0);
+ 			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
+ 		}
+ 	}
+ 
+-    input_report_abs(input, ABS_X, data.j1_ad1);
+-    input_report_abs(input, ABS_Y, data.j1_ad2);
+-    input_report_abs(input, ABS_RX, data.j2_ad1);
+-    input_report_abs(input, ABS_RY, data.j2_ad2);
++	input_report_abs(input, ABS_X, data.j1_ad1);
++	input_report_abs(input, ABS_Y, data.j1_ad2);
++	input_report_abs(input, ABS_RX, data.j2_ad1);
++	input_report_abs(input, ABS_RY, data.j2_ad2);
+ 
+ 	input_sync(input);
+ 
+@@ -299,12 +302,15 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT10, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT9, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT8, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT7, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT6, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT5, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT4, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT3, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT2, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT1, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT1, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT, input);
+ 
+@@ -326,7 +332,7 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW pressed\n");
+ 		}
+ 		else {
+-		    input_report_abs(input, ABS_Z, 0x0);		
++		    input_report_abs(input, ABS_Z, 0x0);
+ 			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
+ 		}
+ 	}
+-- 
+2.43.0
+
