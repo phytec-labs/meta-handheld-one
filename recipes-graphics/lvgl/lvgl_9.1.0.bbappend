@@ -14,5 +14,7 @@ do_configure:append() {
         -e "s|^([[:space:]]*#define LV_FS_POSIX_PATH[[:space:]]).*|\1 \"/\"|" \
         -e "s|^([[:space:]]*#define LV_USE_LIBPNG[[:space:]]).*|\1 1|" \
         -e "s|^([[:space:]]*#define LV_FONT_MONTSERRAT_20[[:space:]]).*|\1 1|" \
+        -e "s|^([[:space:]]*#define LV_CACHE_DEF_SIZE[[:space:]]).*|\1 (4 * 1024 * 1024)|" \
+        -e "s|^([[:space:]]*#define LV_IMAGE_HEADER_CACHE_DEF_CNT[[:space:]]).*|\1 32|" \
         -i "${S}/lv_conf.h"
 }
