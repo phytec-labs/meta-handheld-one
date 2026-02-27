@@ -6,6 +6,7 @@ SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=ht
            file://launcher.conf \
            file://phytec-launcher.service \
            file://phytec-launcher-start.sh \
+           file://retroarch.cfg \
            "
 
 SRCREV = "${AUTOREV}"
@@ -13,7 +14,7 @@ SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 DEPENDS = "virtual/libsdl2 lvgl libdrm libpng systemd"
-RDEPENDS:${PN} = "libsdl2 lvgl libdrm systemd"
+RDEPENDS:${PN} = "libsdl2 lvgl libdrm systemd retroarch"
 
 inherit systemd
 
@@ -52,4 +53,8 @@ do_install() {
     install -d ${D}${systemd_system_unitdir}
     install -m 0644 ${WORKDIR}/phytec-launcher.service \
                     ${D}${systemd_system_unitdir}/phytec-launcher.service
+
+    install -d ${D}${sysconfdir}/retroarch
+    install -m 0644 ${WORKDIR}/retroarch.cfg \
+                ${D}${sysconfdir}/retroarch/retroarch.cfg
 }
