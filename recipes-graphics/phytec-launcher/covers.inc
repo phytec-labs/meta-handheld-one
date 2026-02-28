@@ -15,6 +15,7 @@ LAUNCHER_COVERS = "\
     file://covers/retroarch.png \
     file://covers/freedoom1.png \
     file://covers/freedoom2.png \
+    file://covers/how-we-built-this.png \
 "
 
 SRC_URI:append = " ${LAUNCHER_COVERS}"
