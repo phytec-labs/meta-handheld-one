@@ -1,3 +1,0 @@
-PACKAGECONFIG:append = " wayland"
-EXTRA_OECONF:append = " WAYLAND_SCANNER=${STAGING_BINDIR_NATIVE}/wayland-scanner"
-EXTRA_OEMAKE:append = " WAYLAND_SCANNER=${STAGING_BINDIR_NATIVE}/wayland-scanner"

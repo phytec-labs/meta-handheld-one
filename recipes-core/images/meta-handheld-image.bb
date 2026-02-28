@@ -20,14 +20,10 @@ IMAGE_INSTALL:append = " \
 	neverball-data \
 	phytec-launcher \
 	\
-	vlc \
-	ffmpeg \
-	x264 \
-	x265 \
-	\
 	packagegroup-base \
 	\
 	packagegroup-gstreamer \
+	gstreamer1.0-libav \
 	\
 	${@bb.utils.contains("DISTRO_FEATURES", "virtualization", "packagegroup-virtualization", "", d)} \
 	${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'qtwayland qtwayland-plugins weston weston-init', '', d)} \
