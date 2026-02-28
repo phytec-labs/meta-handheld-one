@@ -20,6 +20,11 @@ IMAGE_INSTALL:append = " \
 	neverball-data \
 	phytec-launcher \
 	\
+	vlc \
+	ffmpeg \
+	x264 \
+	x265 \
+	\
 	packagegroup-base \
 	\
 	packagegroup-gstreamer \
