@@ -19,7 +19,10 @@ SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 DEPENDS = "virtual/libsdl2 lvgl libdrm libpng systemd"
-RDEPENDS:${PN} = "libsdl2 lvgl libdrm systemd retroarch"
+RDEPENDS:${PN} = "libsdl2 lvgl libdrm systemd retroarch \
+    gstreamer1.0-plugins-base-playback \
+    gstreamer1.0-plugins-bad-waylandsink \
+"
 
 inherit systemd
 
