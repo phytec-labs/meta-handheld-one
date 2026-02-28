@@ -2,12 +2,15 @@ SUMMARY = "LVGL 9.1 PHYTEC Handheld Launcher with SDL2"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=https;branch=claude/pedantic-hofstadter \
+SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=https;branch=scarthgap \
            file://launcher.conf \
            file://phytec-launcher.service \
            file://phytec-launcher-start.sh \
            file://retroarch.cfg \
+           file://how-we-built-this.mp4 \
            "
+
+FILES:${PN} += "${ROOT_HOME}/how-we-built-this.mp4"
 
 SRCREV = "${AUTOREV}"
 
@@ -58,4 +61,8 @@ do_install() {
     install -d ${D}${sysconfdir}/retroarch
     install -m 0644 ${WORKDIR}/retroarch.cfg \
                 ${D}${sysconfdir}/retroarch/retroarch.cfg
+
+    install -d ${D}${ROOT_HOME}
+    install -m 0644 ${WORKDIR}/how-we-built-this.mp4 \
+                ${D}${ROOT_HOME}/how-we-built-this.mp4
 }
