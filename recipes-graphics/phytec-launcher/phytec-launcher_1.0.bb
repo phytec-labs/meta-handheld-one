@@ -19,9 +19,7 @@ SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 DEPENDS = "virtual/libsdl2 lvgl libdrm libpng systemd"
-RDEPENDS:${PN} = "libsdl2 lvgl libdrm systemd retroarch \
-    mpv \
-"
+RDEPENDS:${PN} = "libsdl2 lvgl libdrm systemd retroarch mpv"
 
 inherit systemd
 
