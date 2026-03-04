@@ -35,6 +35,7 @@ do_compile() {
         ${S}/src/launcher.cpp \
         ${S}/src/input.cpp \
         ${S}/src/ui.cpp \
+        ${S}/src/settings.cpp \
         -I${STAGING_INCDIR} \
         -I${STAGING_INCDIR}/lvgl \
         -I${S}/src \
