@@ -1,0 +1,214 @@
+From b8769307af81c8c12ba27998326a119814861b85 Mon Sep 17 00:00:00 2001
+From: Garrett Giordano <ggiordano@phytec.com>
+Date: Wed, 4 Mar 2026 14:42:33 -0800
+Subject: [PATCH] drivers: input: joystick: phyhandheld.c: use HATS for d-pad
+
+Signed-off-by: Garrett Giordano <ggiordano@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 115 +++++++++++++++++++++------
+ 1 file changed, 89 insertions(+), 26 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 48645dce4562..e3b895e6c66b 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -77,10 +77,7 @@ static const struct key_entry phyhandheld_buttons_new[] = {
+ 	{ KE_KEY, PHYHANDHELD_BUT1, .keycode = BTN_EAST },
+ 	{ KE_KEY, PHYHANDHELD_BUT2, .keycode = BTN_WEST },
+ 	{ KE_KEY, PHYHANDHELD_BUT3, .keycode = BTN_SOUTH },
+-	{ KE_KEY, PHYHANDHELD_BUT4, .keycode = BTN_DPAD_DOWN },
+-	{ KE_KEY, PHYHANDHELD_BUT5, .keycode = BTN_DPAD_RIGHT },
+-	{ KE_KEY, PHYHANDHELD_BUT6, .keycode = BTN_DPAD_UP },
+-	{ KE_KEY, PHYHANDHELD_BUT7, .keycode = BTN_DPAD_LEFT },
++	/* D-pad (BUT4-BUT7) reported as ABS_HAT0X/Y axes, not key events */
+ 	{ KE_KEY, PHYHANDHELD_BUT8, .keycode = BTN_MODE },
+ 	{ KE_KEY, PHYHANDHELD_BUT9, .keycode = BTN_SELECT },
+ 	{ KE_KEY, PHYHANDHELD_BUT10, .keycode = BTN_START },
+@@ -255,10 +252,6 @@ static void phyhandheld_poll(struct input_dev *input)
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT10, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT9, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT8, input);
+-	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT7, input);
+-	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT6, input);
+-	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT5, input);
+-	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT4, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT3, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT2, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT1, input);
+@@ -266,25 +259,56 @@ static void phyhandheld_poll(struct input_dev *input)
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT1, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT, input);
+ 
++	/* D-pad: report as hat axes (matches Xbox/xpad convention for SDL2) */
++	if(button_changed & (PHYHANDHELD_BUT5 | PHYHANDHELD_BUT7)) {
++		if(data.button_state & PHYHANDHELD_BUT5) {
++			input_report_abs(input, ABS_HAT0X, 1);
++			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_RIGHT pressed\n");
++		}
++		else if(data.button_state & PHYHANDHELD_BUT7) {
++			input_report_abs(input, ABS_HAT0X, -1);
++			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_LEFT pressed\n");
++		}
++		else {
++			input_report_abs(input, ABS_HAT0X, 0);
++			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_X released\n");
++		}
++	}
++
++	if(button_changed & (PHYHANDHELD_BUT4 | PHYHANDHELD_BUT6)) {
++		if(data.button_state & PHYHANDHELD_BUT4) {
++			input_report_abs(input, ABS_HAT0Y, 1);
++			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_DOWN pressed\n");
++		}
++		else if(data.button_state & PHYHANDHELD_BUT6) {
++			input_report_abs(input, ABS_HAT0Y, -1);
++			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_UP pressed\n");
++		}
++		else {
++			input_report_abs(input, ABS_HAT0Y, 0);
++			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_Y released\n");
++		}
++	}
++
+ 	if(button_changed & PHYHANDHELD_J2_SW) {
+ 		if(data.button_state & PHYHANDHELD_J2_SW) {
+-		    input_report_abs(input, ABS_RZ, 0xff);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW pressed\n");
++			input_report_abs(input, ABS_RZ, 0xfff);
++			dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J2_SW pressed\n");
+ 		}
+ 		else {
+-	    	input_report_abs(input, ABS_RZ, 0x0);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
++			input_report_abs(input, ABS_RZ, 0x0);
++			dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J2_SW released\n");
+ 		}
+ 	}
+ 
+ 	if(button_changed & PHYHANDHELD_J1_SW) {
+ 		if(data.button_state & PHYHANDHELD_J1_SW) {
+-		    input_report_abs(input, ABS_Z, 0xfff);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW pressed\n");
++			input_report_abs(input, ABS_Z, 0xfff);
++			dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J1_SW pressed\n");
+ 		}
+ 		else {
+-		    input_report_abs(input, ABS_Z, 0x0);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
++			input_report_abs(input, ABS_Z, 0x0);
++			dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J1_SW released\n");
+ 		}
+ 	}
+ 
+@@ -331,10 +355,6 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT10, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT9, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT8, input);
+-	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT7, input);
+-	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT6, input);
+-	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT5, input);
+-	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT4, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT3, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT2, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT1, input);
+@@ -342,26 +362,56 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT1, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT, input);
+ 
++	/* D-pad: report as hat axes (matches Xbox/xpad convention for SDL2) */
++	if(button_changed & (PHYHANDHELD_BUT5 | PHYHANDHELD_BUT7)) {
++		if(data.button_state & PHYHANDHELD_BUT5) {
++			input_report_abs(input, ABS_HAT0X, 1);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_RIGHT pressed\n");
++		}
++		else if(data.button_state & PHYHANDHELD_BUT7) {
++			input_report_abs(input, ABS_HAT0X, -1);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_LEFT pressed\n");
++		}
++		else {
++			input_report_abs(input, ABS_HAT0X, 0);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_X released\n");
++		}
++	}
++
++	if(button_changed & (PHYHANDHELD_BUT4 | PHYHANDHELD_BUT6)) {
++		if(data.button_state & PHYHANDHELD_BUT4) {
++			input_report_abs(input, ABS_HAT0Y, 1);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_DOWN pressed\n");
++		}
++		else if(data.button_state & PHYHANDHELD_BUT6) {
++			input_report_abs(input, ABS_HAT0Y, -1);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_UP pressed\n");
++		}
++		else {
++			input_report_abs(input, ABS_HAT0Y, 0);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_Y released\n");
++		}
++	}
+ 
+ 	if(button_changed & PHYHANDHELD_J2_SW) {
+ 		if(data.button_state & PHYHANDHELD_J2_SW) {
+-		    input_report_abs(input, ABS_RZ, 0xff);
++			input_report_abs(input, ABS_RZ, 0xfff);
+ 			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW pressed\n");
+ 		}
+ 		else {
+-	    	input_report_abs(input, ABS_RZ, 0x0);
++			input_report_abs(input, ABS_RZ, 0x0);
+ 			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
+ 		}
+ 	}
+ 
+ 	if(button_changed & PHYHANDHELD_J1_SW) {
+ 		if(data.button_state & PHYHANDHELD_J1_SW) {
+-		    input_report_abs(input, ABS_Z, 0xfff);
++			input_report_abs(input, ABS_Z, 0xfff);
+ 			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW pressed\n");
+ 		}
+ 		else {
+-		    input_report_abs(input, ABS_Z, 0x0);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
++			input_report_abs(input, ABS_Z, 0x0);
++			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW released\n");
+ 		}
+ 	}
+ 
+@@ -374,7 +424,7 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 
+ 	private->last_button_state = data.button_state;
+ 
+-    return IRQ_HANDLED;
++	return IRQ_HANDLED;
+ }
+ #endif
+ 
+@@ -414,6 +464,9 @@ static int phyhandheld_probe(struct i2c_client *client)
+ 		return -ENOMEM;
+ 
+ 	phyhandheld->input_dev->id.bustype = BUS_I2C;
++	phyhandheld->input_dev->id.vendor  = 0x3432;
++	phyhandheld->input_dev->id.product = 0x0001;
++	phyhandheld->input_dev->id.version = 0x0100;
+ 	phyhandheld->input_dev->name = "PHYTEC Handheld One Gamepad";
+ 	phyhandheld->input_dev->phys = "i2c/" PHYHANDHELD_DEVICE_NAME;
+ 	phyhandheld->input_dev->open = phyhandheld_open;
+@@ -431,6 +484,16 @@ static int phyhandheld_probe(struct i2c_client *client)
+ 			     0, PHYHANDHELD_JOYSTICK_MAX_AXIS,
+ 			     PHYHANDHELD_JOYSTICK_FUZZ, PHYHANDHELD_JOYSTICK_FLAT);
+ 
++	/* D-pad hat axes (digital: -1, 0, +1) */
++	input_set_abs_params(phyhandheld->input_dev, ABS_HAT0X, -1, 1, 0, 0);
++	input_set_abs_params(phyhandheld->input_dev, ABS_HAT0Y, -1, 1, 0, 0);
++
++	/* Joystick click buttons reported as trigger axes */
++	input_set_abs_params(phyhandheld->input_dev, ABS_Z,
++			     0, PHYHANDHELD_JOYSTICK_MAX_AXIS, 0, 0);
++	input_set_abs_params(phyhandheld->input_dev, ABS_RZ,
++			     0, PHYHANDHELD_JOYSTICK_MAX_AXIS, 0, 0);
++
+ 	err = sparse_keymap_setup(phyhandheld->input_dev, phyhandheld_buttons_new, NULL);
+ 	if (err) {
+ 		dev_err(&client->dev,
+-- 
+2.43.0
+
