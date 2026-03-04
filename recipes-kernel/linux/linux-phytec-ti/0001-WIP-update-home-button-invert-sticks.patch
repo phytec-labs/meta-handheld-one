@@ -1,0 +1,41 @@
+From a41f46963dbf3bd557e988a4b275df5c8ddcd3fd Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Wed, 4 Mar 2026 13:50:28 -0800
+Subject: [PATCH] WIP update home button, invert sticks
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index e43b534089b3..48645dce4562 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -81,7 +81,7 @@ static const struct key_entry phyhandheld_buttons_new[] = {
+ 	{ KE_KEY, PHYHANDHELD_BUT5, .keycode = BTN_DPAD_RIGHT },
+ 	{ KE_KEY, PHYHANDHELD_BUT6, .keycode = BTN_DPAD_UP },
+ 	{ KE_KEY, PHYHANDHELD_BUT7, .keycode = BTN_DPAD_LEFT },
+-	{ KE_KEY, PHYHANDHELD_BUT8, .keycode = KEY_HOME },
++	{ KE_KEY, PHYHANDHELD_BUT8, .keycode = BTN_MODE },
+ 	{ KE_KEY, PHYHANDHELD_BUT9, .keycode = BTN_SELECT },
+ 	{ KE_KEY, PHYHANDHELD_BUT10, .keycode = BTN_START },
+ 	{ KE_END, 0 }
+@@ -365,10 +365,10 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 		}
+ 	}
+ 
+-	input_report_abs(input, ABS_RX, data.j1_ad1);
+-	input_report_abs(input, ABS_RY, data.j1_ad2);
+-	input_report_abs(input, ABS_X, data.j2_ad1);
+-	input_report_abs(input, ABS_Y, data.j2_ad2);
++	input_report_abs(input, ABS_RX, 0xfff - data.j1_ad1);
++	input_report_abs(input, ABS_RY, 0xfff - data.j1_ad2);
++	input_report_abs(input, ABS_X, 0xfff - data.j2_ad1);
++	input_report_abs(input, ABS_Y, 0xfff - data.j2_ad2);
+ 
+ 	input_sync(input);
+ 
+-- 
+2.43.0
+

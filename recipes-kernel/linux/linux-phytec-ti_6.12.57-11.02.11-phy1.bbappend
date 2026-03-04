@@ -12,7 +12,12 @@ SRC_URI:append = " \
 	file://0001-WIP-backlight.patch \
 	file://0001-WIP-updates-from-John.patch \
 	file://0001-WIP-swap-joysticks.patch \
+	file://0001-WIP-update-home-button-invert-sticks.patch \
 "
+###
+###	file://0001-WIP-updates-from-John.patch \
+###	file://0001-WIP-swap-joysticks.patch \
+###
 
 COMPATIBLE_MACHINE  = "^("
 COMPATIBLE_MACHINE .=  "phyboard-lyra"
