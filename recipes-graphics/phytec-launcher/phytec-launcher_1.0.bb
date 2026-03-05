@@ -30,7 +30,7 @@ FILES:${PN} += "${ROOT_HOME}/how-we-built-this.mp4 \
                 "
 
 SRCREV = "${AUTOREV}"
-
+S = "${WORKDIR}/git"
 
 DEPENDS = "virtual/libsdl2 lvgl libdrm libpng systemd"
 RDEPENDS:${PN} = "libsdl2 lvgl libdrm systemd retroarch mpv"

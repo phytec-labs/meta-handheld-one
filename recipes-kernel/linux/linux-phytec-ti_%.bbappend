@@ -15,11 +15,11 @@ SRC_URI:append = " \
 	file://0001-WIP-update-home-button-invert-sticks.patch \
 	file://0001-WIP-buffer-update.patch \
 	file://0001-WIP-MSPM0-nReset-GPIO.patch \
+	file://0001-drivers-input-joystick-phyhandheld.c-use-HATS-for-d-.patch \
+	file://0001-WIP-swap-buttons-1-and-0.patch \
 "
-###
-###	file://0001-WIP-updates-from-John.patch \
-###	file://0001-WIP-swap-joysticks.patch \
-###
+
+
 
 COMPATIBLE_MACHINE  = "^("
 COMPATIBLE_MACHINE .=  "phyboard-lyra"
