@@ -8,6 +8,7 @@ SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=ht
            file://phytec-launcher-start.sh \
            file://retroarch.cfg \
            file://PHYTEC-Handheld-One-Gamepad.cfg \
+           file://PHYTEC-Handheld-One-Gamepad-udev.cfg \
            https://fileshare.phytec.com/index.php/s/dKCqzTGdNkBTCN5/download/how-we-built-this.mp4;name=video \
            file://neverballrc \
            file://stk/config.xml \
@@ -28,6 +29,8 @@ FILES:${PN} += "${ROOT_HOME}/how-we-built-this.mp4 \
                 ${ROOT_HOME}/.config/supertuxkart/config-0.10/server_config.xml \
                 ${datadir}/retroarch/autoconfig/sdl2/PHYTEC-Handheld-One-Gamepad.cfg \
                 ${datadir}/retroarch/autoconfig/sdl2/PHYTEC-Handheld-One-Gamepad.cfg \
+                ${datadir}/retroarch/autoconfig/sdl2/PHYTEC-Handheld-One-Gamepad.cfg \
+                ${datadir}/retroarch/autoconfig/udev/PHYTEC-Handheld-One-Gamepad.cfg \
                 "
 
 SRCREV = "${AUTOREV}"
@@ -83,6 +86,10 @@ do_install() {
     install -d ${D}${datadir}/retroarch/autoconfig/sdl2
     install -m 0644 ${WORKDIR}/PHYTEC-Handheld-One-Gamepad.cfg \
                 ${D}${datadir}/retroarch/autoconfig/sdl2/PHYTEC-Handheld-One-Gamepad.cfg
+
+    install -d ${D}${datadir}/retroarch/autoconfig/udev
+    install -m 0644 ${WORKDIR}/PHYTEC-Handheld-One-Gamepad-udev.cfg \
+                ${D}${datadir}/retroarch/autoconfig/udev/PHYTEC-Handheld-One-Gamepad.cfg
 
     install -d ${D}${ROOT_HOME}
     install -m 0644 ${WORKDIR}/how-we-built-this.mp4 \
