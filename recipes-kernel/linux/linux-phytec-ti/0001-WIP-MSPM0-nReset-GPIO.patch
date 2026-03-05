@@ -1,0 +1,56 @@
+From e6dae7407d919de4edca6baf6aff05b0d45cd3d0 Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Thu, 5 Mar 2026 09:40:34 -0800
+Subject: [PATCH] WIP MSPM0 nReset GPIO
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ .../dts/ti/k3-am62p5-phyflex-phyhandheld.dts  | 25 +++++++++++++------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+index 03a9f059787d..c7e973d5d235 100644
+--- a/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
++++ b/arch/arm64/boot/dts/ti/k3-am62p5-phyflex-phyhandheld.dts
+@@ -153,6 +153,12 @@ AM62PX_IOPAD(0x0050, PIN_INPUT, 7) /* (T21) GPMC0_AD5.GPIO0_20 */
+ 		>;
+ 	};
+ 
++	gpio0_pin_hog_pins_default: gpio0-pin-hog-default-pins {
++		pinctrl-single,pins = <
++			AM62PX_IOPAD(0x0a8, PIN_INPUT, 7) /* (T23) GPMC0_CSn0.GPIO0_41 */
++		>;
++	};
++
+ 	joystick_int_pins_default: joystick-int-default-pins {
+ 		pinctrl-single,pins = <
+ 			AM62PX_IOPAD(0x00a4, PIN_INPUT, 7) /* (P25) GPMC0_DIR.GPIO0_40 */
+@@ -283,14 +289,17 @@ &epwm1 {
+ 	status = "okay";
+ };
+ 
+-//&main_gpio1 {
+-//	p7-hog {
+-		/* Backlight Enable */
+-//		gpio-hog;
+-//		gpios = <7 GPIO_ACTIVE_HIGH>;
+-//		output-high;
+-//	};
+-//};
++&main_gpio0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&gpio0_pin_hog_pins_default>;
++
++	p41-hog {
++		/* MSPM0 nReset */
++		gpio-hog;
++		gpios = <41 GPIO_ACTIVE_HIGH>;
++		output-high;
++	};
++};
+ 
+ &main_i2c0 {	/* FPSC I2C2 */
+ 	clock-frequency = <400000>;
+-- 
+2.43.0
+

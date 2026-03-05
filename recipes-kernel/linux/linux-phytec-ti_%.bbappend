@@ -13,6 +13,8 @@ SRC_URI:append = " \
 	file://0001-WIP-updates-from-John.patch \
 	file://0001-WIP-swap-joysticks.patch \
 	file://0001-WIP-update-home-button-invert-sticks.patch \
+	file://0001-WIP-buffer-update.patch \
+	file://0001-WIP-MSPM0-nReset-GPIO.patch \
 "
 ###
 ###	file://0001-WIP-updates-from-John.patch \

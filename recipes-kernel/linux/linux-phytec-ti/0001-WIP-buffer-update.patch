@@ -1,0 +1,26 @@
+From b4b73555422557682e208dbd53dc89fbbd075a0d Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Wed, 4 Mar 2026 15:48:35 -0800
+Subject: [PATCH] WIP buffer update
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 48645dce4562..a990072f299e 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -381,7 +381,7 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ static int phyhandheld_probe(struct i2c_client *client)
+ {
+ 	struct phyhandheld_gamepad *phyhandheld;
+-	u16 fw_ver[4];
++	u16 fw_ver[5];
+ 	int err;
+ 
+ 	err = phyhandheld_register_write_u8(client, PHYHANDHELD_SWRST, PHYHANDHELD_SWRST);
+-- 
+2.43.0
+
