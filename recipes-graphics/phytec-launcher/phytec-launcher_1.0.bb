@@ -8,11 +8,24 @@ SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=ht
            file://phytec-launcher-start.sh \
            file://retroarch.cfg \
            https://fileshare.phytec.com/index.php/s/dKCqzTGdNkBTCN5/download/how-we-built-this.mp4;name=video \
+           file://neverballrc \
+           file://stk/config.xml \
+           file://stk/highscore.xml \
+           file://stk/input.xml \
+           file://stk/players.xml \
+           file://stk/server_config.xml \
            "
 
 SRC_URI[video.sha256sum] = "345592702357fcb4243fa84e5f74607103c61185e24a711c1d96c2e1105e2d41"
 
-FILES:${PN} += "${ROOT_HOME}/how-we-built-this.mp4"
+FILES:${PN} += "${ROOT_HOME}/how-we-built-this.mp4 \
+                ${ROOT_HOME}/.neverball-dev/neverballrc \
+                ${ROOT_HOME}/.config/supertuxkart/config-0.10/config.xml \
+                ${ROOT_HOME}/.config/supertuxkart/config-0.10/highscore.xml \
+                ${ROOT_HOME}/.config/supertuxkart/config-0.10/input.xml \
+                ${ROOT_HOME}/.config/supertuxkart/config-0.10/players.xml \
+                ${ROOT_HOME}/.config/supertuxkart/config-0.10/server_config.xml \
+                "
 
 SRCREV = "${AUTOREV}"
 
@@ -68,4 +81,20 @@ do_install() {
     install -d ${D}${ROOT_HOME}
     install -m 0644 ${WORKDIR}/how-we-built-this.mp4 \
                 ${D}${ROOT_HOME}/how-we-built-this.mp4
+
+    install -d ${D}${ROOT_HOME}/.neverball-dev
+    install -m 0644 ${WORKDIR}/neverballrc \
+                ${D}${ROOT_HOME}/.neverball-dev/neverballrc
+
+    install -d ${D}${ROOT_HOME}/.config/supertuxkart/config-0.10/
+    install -m 0644 ${WORKDIR}/stk/config.xml \
+                ${D}${ROOT_HOME}/.config/supertuxkart/config-0.10/config.xml
+    install -m 0644 ${WORKDIR}/stk/highscore.xml \
+                ${D}${ROOT_HOME}/.config/supertuxkart/config-0.10/highscore.xml
+    install -m 0644 ${WORKDIR}/stk/input.xml \
+                ${D}${ROOT_HOME}/.config/supertuxkart/config-0.10/input.xml
+    install -m 0644 ${WORKDIR}/stk/players.xml \
+                ${D}${ROOT_HOME}/.config/supertuxkart/config-0.10/players.xml
+    install -m 0644 ${WORKDIR}/stk/server_config.xml \
+                ${D}${ROOT_HOME}/.config/supertuxkart/config-0.10/server_config.xml
 }
