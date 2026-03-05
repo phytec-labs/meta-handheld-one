@@ -27,6 +27,7 @@ FILES:${PN} += "${ROOT_HOME}/how-we-built-this.mp4 \
                 ${ROOT_HOME}/.config/supertuxkart/config-0.10/players.xml \
                 ${ROOT_HOME}/.config/supertuxkart/config-0.10/server_config.xml \
                 ${datadir}/retroarch/autoconfig/sdl2/PHYTEC-Handheld-One-Gamepad.cfg \
+                ${datadir}/retroarch/autoconfig/sdl2/PHYTEC-Handheld-One-Gamepad.cfg \
                 "
 
 SRCREV = "${AUTOREV}"
