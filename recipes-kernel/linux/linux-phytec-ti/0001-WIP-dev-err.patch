@@ -1,0 +1,38 @@
+From 9edf2f986527098df5b11b67c52902ce89b0abc1 Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Fri, 6 Mar 2026 14:47:43 -0800
+Subject: [PATCH] WIP dev err
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 3d59cc8d5c6e..2078893400e4 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -193,8 +193,8 @@ static int phyhandheld_read_data5(struct i2c_client *client, struct phyhandheld_
+ 	data->j2_ad1 = be16_to_cpu(read_buf[3]);
+ 	data->j2_ad2 = be16_to_cpu(read_buf[4]);
+ 
+-	dev_dbg(&client->dev, "phyhandheld_register_read_data: %d %d %d %d\n",
+-				data->j1_ad1, data->j1_ad2, data->j2_ad2, data->j2_ad2);
++	dev_dbg(&client->dev, "1 ----- phyhandheld_register_read_data: %d %d %d %d\n",
++				data->j1_ad1, data->j1_ad2, data->j2_ad1, data->j2_ad2);
+ 
+ 	if (data->j1_ad1 > 3429) {
+ 		data->j1_ad1 = 3429;
+@@ -220,6 +220,9 @@ static int phyhandheld_read_data5(struct i2c_client *client, struct phyhandheld_
+ 		data->j2_ad2 = 700;
+ 	}
+ 
++	dev_dbg(&client->dev, "2 ----- phyhandheld_register_read_data: %d %d %d %d\n",
++				data->j1_ad1, data->j1_ad2, data->j2_ad1, data->j2_ad2);
++
+ 	data->j1_ad1 = (be16_to_cpu(read_buf[1]) * 3) / 2 - 1050;
+ 	data->j1_ad2 = (be16_to_cpu(read_buf[2]) * 3) / 2 - 1050;
+ 	data->j2_ad1 = (be16_to_cpu(read_buf[3]) * 3) / 2 - 1050;
+-- 
+2.43.0
+

@@ -1,0 +1,58 @@
+From d7279a31fc021316cc561eb47dd6cd1fc0cd67ba Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Fri, 6 Mar 2026 14:52:58 -0800
+Subject: [PATCH] WIP lteq
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 2078893400e4..a790b07e4697 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -196,28 +196,28 @@ static int phyhandheld_read_data5(struct i2c_client *client, struct phyhandheld_
+ 	dev_dbg(&client->dev, "1 ----- phyhandheld_register_read_data: %d %d %d %d\n",
+ 				data->j1_ad1, data->j1_ad2, data->j2_ad1, data->j2_ad2);
+ 
+-	if (data->j1_ad1 > 3429) {
++	if (data->j1_ad1 >= 3429) {
+ 		data->j1_ad1 = 3429;
+-	} else if (data->j1_ad1 < 700) {
+-		data->j1_ad1 = 700;
++	} else if (data->j1_ad1 <= 700) {
++		data->j1_ad1 = 701;
+ 	}
+ 
+-	if (data->j1_ad2 > 3429) {
++	if (data->j1_ad2 >= 3429) {
+ 		data->j1_ad2 = 3429;
+-	} else if (data->j1_ad2 < 700) {
+-		data->j1_ad2 = 700;
++	} else if (data->j1_ad2 <= 700) {
++		data->j1_ad2 = 701;
+ 	}
+ 
+-	if (data->j2_ad1 > 3429) {
++	if (data->j2_ad1 >= 3429) {
+ 		data->j2_ad1 = 3429;
+-	} else if (data->j2_ad1 < 700) {
+-		data->j2_ad1 = 700;
++	} else if (data->j2_ad1 <= 700) {
++		data->j2_ad1 = 701;
+ 	}
+ 
+-	if (data->j2_ad2 > 3429) {
++	if (data->j2_ad2 >= 3429) {
+ 		data->j2_ad2 = 0x3429;
+-	} else if (data->j2_ad2 < 700) {
+-		data->j2_ad2 = 700;
++	} else if (data->j2_ad2 <= 700) {
++		data->j2_ad2 = 701;
+ 	}
+ 
+ 	dev_dbg(&client->dev, "2 ----- phyhandheld_register_read_data: %d %d %d %d\n",
+-- 
+2.43.0
+

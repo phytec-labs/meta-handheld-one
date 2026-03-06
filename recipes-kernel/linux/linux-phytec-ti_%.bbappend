@@ -21,6 +21,11 @@ SRC_URI:append = " \
 	file://0001-WIP-swap-buttons-1-and-0.patch \
 	file://0001-WIP-centering.patch \
 	file://0001-WIP-deadzone.patch \
+	file://0001-WIP-stuff.patch \
+	file://0001-WIP-dev-err.patch \
+	file://0001-WIP-lteq.patch \
+	file://0001-WIP-bugfix.patch \
+	file://0001-WIP-button-swap.patch \
 "
 
 

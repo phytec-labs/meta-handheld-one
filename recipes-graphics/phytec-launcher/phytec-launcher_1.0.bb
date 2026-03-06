@@ -8,7 +8,7 @@ SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=ht
            file://phytec-launcher-start.sh \
            file://retroarch.cfg \
            file://PHYTEC-Handheld-One-Gamepad-udev.cfg \
-           https://fileshare.phytec.com/index.php/s/7knnAxDDXynqnLd/download/how-we-built-this.mp4;name=video \
+           https://fileshare.phytec.com/index.php/s/PWRGNscHwPAFrXw/download/how-we-built-this.mp4;name=video \
            file://neverballrc \
            file://stk/config.xml \
            file://stk/highscore.xml \
@@ -17,7 +17,7 @@ SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=ht
            file://stk/server_config.xml \
            "
 
-SRC_URI[video.sha256sum] = "1c529252c7ede3e7ddd364b269959b9b59a6a76bf0d4c2939bcc780ed723b353"
+SRC_URI[video.sha256sum] = "c99308c11fb54e546142bdb2c077e73d09700bbb8e89aa5b5bbd435078ae6d74"
 
 FILES:${PN} += "${ROOT_HOME}/how-we-built-this.mp4 \
                 ${ROOT_HOME}/.neverball-dev/neverballrc \

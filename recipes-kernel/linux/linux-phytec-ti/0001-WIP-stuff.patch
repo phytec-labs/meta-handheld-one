@@ -1,0 +1,309 @@
+From 5c95602132e197ed48557e5391adadc8a34eac17 Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Fri, 6 Mar 2026 14:23:13 -0800
+Subject: [PATCH] WIP stuff
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 149 ++++++++++++++++++++-------
+ 1 file changed, 110 insertions(+), 39 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 9ae473546cd5..3d59cc8d5c6e 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -144,8 +144,8 @@ static int phyhandheld_read_data4(struct i2c_client *client, struct phyhandheld_
+ 	if (err)
+ 		return err;
+ 
+-	dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x\n",
+-				read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
++	//dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x\n",
++	//			read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
+ 
+ 	data->button_state = ~be16_to_cpu(read_buf[0]);
+ 
+@@ -158,8 +158,8 @@ static int phyhandheld_read_data4(struct i2c_client *client, struct phyhandheld_
+ 	if (err)
+ 		return err;
+ 
+-	dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x\n",
+-				read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
++	//dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x\n",
++	//			read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
+ 
+ 	data->j1_ad1 = be16_to_cpu(read_buf[0]);
+ 	data->j1_ad2 = be16_to_cpu(read_buf[1]);
+@@ -183,8 +183,8 @@ static int phyhandheld_read_data5(struct i2c_client *client, struct phyhandheld_
+ 	if (err)
+ 		return err;
+ 
+-	dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x\n",
+-				read_buf[0], read_buf[1], read_buf[2], read_buf[3], read_buf[4]);
++	//dev_dbg(&client->dev, "phyhandheld_register_read_data: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x\n",
++	//			read_buf[0], read_buf[1], read_buf[2], read_buf[3], read_buf[4]);
+ 
+ 	data->button_state = ~be16_to_cpu(read_buf[0]);
+ 
+@@ -193,17 +193,44 @@ static int phyhandheld_read_data5(struct i2c_client *client, struct phyhandheld_
+ 	data->j2_ad1 = be16_to_cpu(read_buf[3]);
+ 	data->j2_ad2 = be16_to_cpu(read_buf[4]);
+ 
++	dev_dbg(&client->dev, "phyhandheld_register_read_data: %d %d %d %d\n",
++				data->j1_ad1, data->j1_ad2, data->j2_ad2, data->j2_ad2);
++
++	if (data->j1_ad1 > 3429) {
++		data->j1_ad1 = 3429;
++	} else if (data->j1_ad1 < 700) {
++		data->j1_ad1 = 700;
++	}
++
++	if (data->j1_ad2 > 3429) {
++		data->j1_ad2 = 3429;
++	} else if (data->j1_ad2 < 700) {
++		data->j1_ad2 = 700;
++	}
++
++	if (data->j2_ad1 > 3429) {
++		data->j2_ad1 = 3429;
++	} else if (data->j2_ad1 < 700) {
++		data->j2_ad1 = 700;
++	}
++
++	if (data->j2_ad2 > 3429) {
++		data->j2_ad2 = 0x3429;
++	} else if (data->j2_ad2 < 700) {
++		data->j2_ad2 = 700;
++	}
++
+ 	data->j1_ad1 = (be16_to_cpu(read_buf[1]) * 3) / 2 - 1050;
+ 	data->j1_ad2 = (be16_to_cpu(read_buf[2]) * 3) / 2 - 1050;
+ 	data->j2_ad1 = (be16_to_cpu(read_buf[3]) * 3) / 2 - 1050;
+ 	data->j2_ad2 = (be16_to_cpu(read_buf[4]) * 3) / 2 - 1050;
+ 
+-	if (data->j1_ad1 > 1800 && data->j1_ad1 < 2200 && data->j1_ad2 > 1800 && data->j1_ad2 < 2200){
++	if (data->j1_ad1 > 1500 && data->j1_ad1 < 2500 && data->j1_ad2 > 1500 && data->j1_ad2 < 2500){
+ 		data->j1_ad1 = 2000;
+ 		data->j1_ad2 = 2000;
+ 	}
+ 
+-	if (data->j2_ad1 > 1800 && data->j2_ad1 < 2200 && data->j2_ad2 > 1800 && data->j2_ad2 < 2200){
++	if (data->j2_ad1 > 1500 && data->j2_ad1 < 2500 && data->j2_ad2 > 1500 && data->j2_ad2 < 2500){
+ 		data->j2_ad1 = 2000;
+ 		data->j2_ad2 = 2000;
+ 	}
+@@ -226,11 +253,11 @@ static int phyhandheld_button_handler(u16 button_state, u16 button_changed, u16
+ 	if(button_changed & button_code) {
+ 		if(button_state & button_code) {
+ 			sparse_keymap_report_event(input, button_code, 1, false);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: 0x%x pressed\n", button_code);
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: 0x%x pressed\n", button_code);
+ 		}
+ 		else {
+ 			sparse_keymap_report_event(input, button_code, 0, false);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: 0x%x released\n", button_code);
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: 0x%x released\n", button_code);
+ 		}
+ 	}
+ 	return 0;
+@@ -244,7 +271,7 @@ static void phyhandheld_poll(struct input_dev *input)
+ 	int err;
+ 	u16 button_changed;
+ 
+-	dev_dbg(&input->dev, "phyhandheld_poll\n");
++	//dev_dbg(&input->dev, "phyhandheld_poll\n");
+ 
+ 	err = phyhandheld_read_data5(private->i2c_client, &data);
+ 	if (err) {
+@@ -256,14 +283,14 @@ static void phyhandheld_poll(struct input_dev *input)
+ 	button_changed = private->last_button_state^data.button_state;
+ 
+ 
+-	dev_dbg(&input->dev, "phyhandheld_poll: last_button_state 0x%x, data.button_state 0x%x, button_changed 0x%x\n",
+-					private->last_button_state, data.button_state, button_changed);
++	//dev_dbg(&input->dev, "phyhandheld_poll: last_button_state 0x%x, data.button_state 0x%x, button_changed 0x%x\n",
++	//				private->last_button_state, data.button_state, button_changed);
+ 
+-	dev_dbg(&input->dev, "phyhandheld_poll: data.j1_ad1 0x%x data.j1_ad2 0x%x\n",
+-					data.j1_ad1, data.j1_ad2);
++	//dev_dbg(&input->dev, "phyhandheld_poll: data.j1_ad1 0x%x data.j1_ad2 0x%x\n",
++	//				data.j1_ad1, data.j1_ad2);
+ 
+-	dev_dbg(&input->dev, "phyhandheld_poll: data.j2_ad1 0x%x data.j2_ad2 0x%x\n",
+-					data.j2_ad1, data.j2_ad2);
++	//dev_dbg(&input->dev, "phyhandheld_poll: data.j2_ad1 0x%x data.j2_ad2 0x%x\n",
++	//				data.j2_ad1, data.j2_ad2);
+ 
+ 
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT10, input);
+@@ -282,30 +309,52 @@ static void phyhandheld_poll(struct input_dev *input)
+ 	if(button_changed & (PHYHANDHELD_BUT5 | PHYHANDHELD_BUT7)) {
+ 		if(data.button_state & PHYHANDHELD_BUT5) {
+ 			input_report_abs(input, ABS_HAT0X, 1);
+-			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_RIGHT pressed\n");
++			//dev_dbg(&input->dev, "phyhandheld_poll: DPAD_RIGHT pressed\n");
+ 		}
+ 		else if(data.button_state & PHYHANDHELD_BUT7) {
+ 			input_report_abs(input, ABS_HAT0X, -1);
+-			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_LEFT pressed\n");
++			//dev_dbg(&input->dev, "phyhandheld_poll: DPAD_LEFT pressed\n");
+ 		}
+ 		else {
+ 			input_report_abs(input, ABS_HAT0X, 0);
+-			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_X released\n");
++			//dev_dbg(&input->dev, "phyhandheld_poll: DPAD_X released\n");
+ 		}
+ 	}
+ 
+ 	if(button_changed & (PHYHANDHELD_BUT4 | PHYHANDHELD_BUT6)) {
+ 		if(data.button_state & PHYHANDHELD_BUT4) {
+ 			input_report_abs(input, ABS_HAT0Y, 1);
+-			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_DOWN pressed\n");
++			//dev_dbg(&input->dev, "phyhandheld_poll: DPAD_DOWN pressed\n");
+ 		}
+ 		else if(data.button_state & PHYHANDHELD_BUT6) {
+ 			input_report_abs(input, ABS_HAT0Y, -1);
+-			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_UP pressed\n");
++			//dev_dbg(&input->dev, "phyhandheld_poll: DPAD_UP pressed\n");
+ 		}
+ 		else {
+ 			input_report_abs(input, ABS_HAT0Y, 0);
+-			dev_dbg(&input->dev, "phyhandheld_poll: DPAD_Y released\n");
++			//dev_dbg(&input->dev, "phyhandheld_poll: DPAD_Y released\n");
++		}
++	}
++
++	if(button_changed & PHYHANDHELD_J2_SW) {
++		if(data.button_state & PHYHANDHELD_J2_SW) {
++			input_report_abs(input, ABS_RZ, 0xfff);
++			//dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J2_SW pressed\n");
++		}
++		else {
++			input_report_abs(input, ABS_RZ, 0x0);
++			//dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J2_SW released\n");
++		}
++	}
++
++	if(button_changed & PHYHANDHELD_J1_SW) {
++		if(data.button_state & PHYHANDHELD_J1_SW) {
++			input_report_abs(input, ABS_Z, 0xfff);
++			//dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J1_SW pressed\n");
++		}
++		else {
++			input_report_abs(input, ABS_Z, 0x0);
++			//dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J1_SW released\n");
+ 		}
+ 	}
+ 
+@@ -329,7 +378,7 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 	int err;
+ 	u16 button_changed;
+ 
+-	dev_dbg(&input->dev, "phyhandheld_irq_thread\n");
++	//dev_dbg(&input->dev, "phyhandheld_irq_thread\n");
+ 
+ 	err = phyhandheld_read_data5(private->i2c_client, &data);
+ 	if (err) {
+@@ -340,14 +389,14 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 
+ 	button_changed = private->last_button_state^data.button_state;
+ 
+-	dev_dbg(&input->dev, "phyhandheld_irq_thread: last_button_state 0x%x, data.button_state 0x%x, button_changed 0x%x\n",
+-					private->last_button_state, data.button_state, button_changed);
++	//dev_dbg(&input->dev, "phyhandheld_irq_thread: last_button_state 0x%x, data.button_state 0x%x, button_changed 0x%x\n",
++	//				private->last_button_state, data.button_state, button_changed);
+ 
+-	dev_dbg(&input->dev, "phyhandheld_irq_thread: data.j1_ad1 0x%x data.j1_ad2 0x%x\n",
+-					data.j1_ad1, data.j1_ad2);
++	//dev_dbg(&input->dev, "phyhandheld_irq_thread: data.j1_ad1 0x%x data.j1_ad2 0x%x\n",
++	//				data.j1_ad1, data.j1_ad2);
+ 
+-	dev_dbg(&input->dev, "phyhandheld_irq_thread: data.j2_ad1 0x%x data.j2_ad2 0x%x\n",
+-					data.j2_ad1, data.j2_ad2);
++	//dev_dbg(&input->dev, "phyhandheld_irq_thread: data.j2_ad1 0x%x data.j2_ad2 0x%x\n",
++	//				data.j2_ad1, data.j2_ad2);
+ 
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT10, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT9, input);
+@@ -365,30 +414,52 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 	if(button_changed & (PHYHANDHELD_BUT5 | PHYHANDHELD_BUT7)) {
+ 		if(data.button_state & PHYHANDHELD_BUT5) {
+ 			input_report_abs(input, ABS_HAT0X, 1);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_RIGHT pressed\n");
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_RIGHT pressed\n");
+ 		}
+ 		else if(data.button_state & PHYHANDHELD_BUT7) {
+ 			input_report_abs(input, ABS_HAT0X, -1);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_LEFT pressed\n");
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_LEFT pressed\n");
+ 		}
+ 		else {
+ 			input_report_abs(input, ABS_HAT0X, 0);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_X released\n");
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_X released\n");
+ 		}
+ 	}
+ 
+ 	if(button_changed & (PHYHANDHELD_BUT4 | PHYHANDHELD_BUT6)) {
+ 		if(data.button_state & PHYHANDHELD_BUT4) {
+ 			input_report_abs(input, ABS_HAT0Y, 1);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_DOWN pressed\n");
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_DOWN pressed\n");
+ 		}
+ 		else if(data.button_state & PHYHANDHELD_BUT6) {
+ 			input_report_abs(input, ABS_HAT0Y, -1);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_UP pressed\n");
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_UP pressed\n");
+ 		}
+ 		else {
+ 			input_report_abs(input, ABS_HAT0Y, 0);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_Y released\n");
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: DPAD_Y released\n");
++		}
++	}
++
++	if(button_changed & PHYHANDHELD_J2_SW) {
++		if(data.button_state & PHYHANDHELD_J2_SW) {
++			input_report_abs(input, ABS_RZ, 0xff);
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW pressed\n");
++		}
++		else {
++			input_report_abs(input, ABS_RZ, 0x0);
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
++		}
++	}
++
++	if(button_changed & PHYHANDHELD_J1_SW) {
++		if(data.button_state & PHYHANDHELD_J1_SW) {
++			input_report_abs(input, ABS_Z, 0xfff);
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW pressed\n");
++		}
++		else {
++			input_report_abs(input, ABS_Z, 0x0);
++			//dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW released\n");
+ 		}
+ 	}
+ 
+@@ -431,8 +502,8 @@ static int phyhandheld_probe(struct i2c_client *client)
+ 	if (err)
+ 		return err;
+ 
+-	dev_dbg(&client->dev, "PHYTEC Handheld One Gamepad, Firmware Version: %x\n",
+-		fw_ver[0]);
++	//dev_dbg(&client->dev, "PHYTEC Handheld One Gamepad, Firmware Version: %x\n",
++	//	fw_ver[0]);
+ 
+ 	phyhandheld->i2c_client = client;
+ 
+@@ -519,7 +590,7 @@ static int phyhandheld_probe(struct i2c_client *client)
+ 			return ret;
+ 	}
+ #endif
+-	dev_dbg(&client->dev, "PHYTEC Handheld One Gamepad initialized\n");
++	//dev_dbg(&client->dev, "PHYTEC Handheld One Gamepad initialized\n");
+ 
+ 	return 0;
+ }
+-- 
+2.43.0
+
