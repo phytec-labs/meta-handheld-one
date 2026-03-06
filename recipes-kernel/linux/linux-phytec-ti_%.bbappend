@@ -21,6 +21,10 @@ SRC_URI:append = " \
 	file://0001-WIP-swap-buttons-1-and-0.patch \
 	file://0001-WIP-centering.patch \
 	file://0001-WIP-deadzone.patch \
+	file://0001-WIP-increase-deadzones.patch \
+	file://0001-WIP-add-min-max-joystick-values.patch \
+	file://0001-WIP-joystick-debugging.patch \
+	file://0001-WIP-nintendo-layout.patch \
 "
 
 

@@ -1,0 +1,32 @@
+From 8d083b4e6e038eb9500d8ac09d06736d7f8dcbfc Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Fri, 6 Mar 2026 11:28:19 -0800
+Subject: [PATCH] WIP nintendo layout
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 827a34d2dcd0..80443c24bbf2 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -73,10 +73,10 @@ struct phyhandheld_data {
+ static const struct key_entry phyhandheld_buttons_new[] = {
+ 	{ KE_KEY, PHYHANDHELD_R_BUT, .keycode = BTN_TR },
+ 	{ KE_KEY, PHYHANDHELD_R_BUT1, .keycode = BTN_TL },
+-	{ KE_KEY, PHYHANDHELD_BUT, .keycode = BTN_EAST },
+-	{ KE_KEY, PHYHANDHELD_BUT1, .keycode = BTN_NORTH },
+-	{ KE_KEY, PHYHANDHELD_BUT2, .keycode = BTN_WEST },
+-	{ KE_KEY, PHYHANDHELD_BUT3, .keycode = BTN_SOUTH },
++	{ KE_KEY, PHYHANDHELD_BUT, .keycode = BTN_A },
++	{ KE_KEY, PHYHANDHELD_BUT1, .keycode = BTN_X },
++	{ KE_KEY, PHYHANDHELD_BUT2, .keycode = BTN_Y },
++	{ KE_KEY, PHYHANDHELD_BUT3, .keycode = BTN_B },
+ 	/* D-pad (BUT4-BUT7) reported as ABS_HAT0X/Y axes, not key events */
+ 	{ KE_KEY, PHYHANDHELD_BUT8, .keycode = BTN_MODE },
+ 	{ KE_KEY, PHYHANDHELD_BUT9, .keycode = BTN_SELECT },
+-- 
+2.43.0
+
