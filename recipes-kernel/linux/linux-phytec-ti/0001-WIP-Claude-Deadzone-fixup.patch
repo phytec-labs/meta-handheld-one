@@ -1,0 +1,50 @@
+From b1e452a07b23dc0e2fca1c5c92ac69a6ac7ffe3a Mon Sep 17 00:00:00 2001
+From: Garrett Giordano <ggiordano@phytec.com>
+Date: Fri, 6 Mar 2026 02:17:47 +0000
+Subject: [PATCH] WIP: Claude Deadzone fixup
+
+Signed-off-by: Garrett Giordano <ggiordano@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 19 ++-----------------
+ 1 file changed, 2 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 9ae473546cd5..cadc624bb751 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -48,8 +48,8 @@
+ #define PHYHANDHELD_BUT10			0x0001
+ 
+ #define PHYHANDHELD_JOYSTICK_MAX_AXIS	0xfff
+-#define PHYHANDHELD_JOYSTICK_FUZZ		2
+-#define PHYHANDHELD_JOYSTICK_FLAT		4
++#define PHYHANDHELD_JOYSTICK_FUZZ		16
++#define PHYHANDHELD_JOYSTICK_FLAT		200
+ 
+ #define PHYHANDHELD_GAMEPAD_POLL_INTERVAL_MS	3000
+ #define PHYHANDHELD_GAMEPAD_POLL_MIN		2000
+@@ -193,21 +193,6 @@ static int phyhandheld_read_data5(struct i2c_client *client, struct phyhandheld_
+ 	data->j2_ad1 = be16_to_cpu(read_buf[3]);
+ 	data->j2_ad2 = be16_to_cpu(read_buf[4]);
+ 
+-	data->j1_ad1 = (be16_to_cpu(read_buf[1]) * 3) / 2 - 1050;
+-	data->j1_ad2 = (be16_to_cpu(read_buf[2]) * 3) / 2 - 1050;
+-	data->j2_ad1 = (be16_to_cpu(read_buf[3]) * 3) / 2 - 1050;
+-	data->j2_ad2 = (be16_to_cpu(read_buf[4]) * 3) / 2 - 1050;
+-
+-	if (data->j1_ad1 > 1800 && data->j1_ad1 < 2200 && data->j1_ad2 > 1800 && data->j1_ad2 < 2200){
+-		data->j1_ad1 = 2000;
+-		data->j1_ad2 = 2000;
+-	}
+-
+-	if (data->j2_ad1 > 1800 && data->j2_ad1 < 2200 && data->j2_ad2 > 1800 && data->j2_ad2 < 2200){
+-		data->j2_ad1 = 2000;
+-		data->j2_ad2 = 2000;
+-	}
+-
+ 	return 0;
+ }
+ 
+-- 
+2.44.4
+
