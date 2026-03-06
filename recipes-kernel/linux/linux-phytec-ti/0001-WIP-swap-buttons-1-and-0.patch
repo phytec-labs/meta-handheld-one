@@ -1,28 +1,28 @@
-From 230bf7bef2511877ccf356eb76705e6945094272 Mon Sep 17 00:00:00 2001
-From: Nathan Morrisson <nmorrisson@phytec.com>
-Date: Thu, 5 Mar 2026 13:49:43 -0800
+From 56a90c32d3d4025773bdb941b72a0e6801cf9274 Mon Sep 17 00:00:00 2001
+From: Garrett Giordano <ggiordano@phytec.com>
+Date: Fri, 6 Mar 2026 01:07:17 +0000
 Subject: [PATCH] WIP swap buttons 1 and 0
 
-Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+Signed-off-by: Garrett Giordano <ggiordano@phytec.com>
 ---
  drivers/input/joystick/phyhandheld.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
-index a990072f299e..dbada6236e01 100644
+index 0d979680861b..a93a78bbc201 100644
 --- a/drivers/input/joystick/phyhandheld.c
 +++ b/drivers/input/joystick/phyhandheld.c
-@@ -73,8 +73,8 @@ struct phyhandheld_data {
- static const struct key_entry phyhandheld_buttons_new[] = {
- 	{ KE_KEY, PHYHANDHELD_R_BUT, .keycode = BTN_TR },
+@@ -75,8 +75,8 @@ static const struct key_entry phyhandheld_buttons_new[] = {
  	{ KE_KEY, PHYHANDHELD_R_BUT1, .keycode = BTN_TL },
+ 	{ KE_KEY, PHYHANDHELD_J1_SW, .keycode = BTN_THUMBL },
+ 	{ KE_KEY, PHYHANDHELD_J2_SW, .keycode = BTN_THUMBR },
 -	{ KE_KEY, PHYHANDHELD_BUT, .keycode = BTN_NORTH },
 -	{ KE_KEY, PHYHANDHELD_BUT1, .keycode = BTN_EAST },
 +	{ KE_KEY, PHYHANDHELD_BUT, .keycode = BTN_EAST },
 +	{ KE_KEY, PHYHANDHELD_BUT1, .keycode = BTN_NORTH },
  	{ KE_KEY, PHYHANDHELD_BUT2, .keycode = BTN_WEST },
  	{ KE_KEY, PHYHANDHELD_BUT3, .keycode = BTN_SOUTH },
- 	{ KE_KEY, PHYHANDHELD_BUT4, .keycode = BTN_DPAD_DOWN },
+ 	/* D-pad (BUT4-BUT7) reported as ABS_HAT0X/Y axes, not key events */
 -- 
-2.43.0
+2.44.4
 
