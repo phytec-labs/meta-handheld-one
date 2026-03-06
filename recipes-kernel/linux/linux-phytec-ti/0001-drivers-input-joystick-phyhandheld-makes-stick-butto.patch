@@ -1,0 +1,118 @@
+From 3e8dc79d21565ed9f40b851fa5fa68bde7823df9 Mon Sep 17 00:00:00 2001
+From: Garrett Giordano <ggiordano@phytec.com>
+Date: Thu, 5 Mar 2026 16:40:43 -0800
+Subject: [PATCH] drivers: input: joystick: phyhandheld: makes stick buttons
+ real buttons
+
+Signed-off-by: Garrett Giordano <ggiordano@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 58 +++++-----------------------
+ 1 file changed, 9 insertions(+), 49 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index e3b895e6c66b..b270d4509e34 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -73,6 +73,8 @@ struct phyhandheld_data {
+ static const struct key_entry phyhandheld_buttons_new[] = {
+ 	{ KE_KEY, PHYHANDHELD_R_BUT, .keycode = BTN_TR },
+ 	{ KE_KEY, PHYHANDHELD_R_BUT1, .keycode = BTN_TL },
++	{ KE_KEY, PHYHANDHELD_J1_SW, .keycode = BTN_THUMBL },
++	{ KE_KEY, PHYHANDHELD_J2_SW, .keycode = BTN_THUMBR },
+ 	{ KE_KEY, PHYHANDHELD_BUT, .keycode = BTN_NORTH },
+ 	{ KE_KEY, PHYHANDHELD_BUT1, .keycode = BTN_EAST },
+ 	{ KE_KEY, PHYHANDHELD_BUT2, .keycode = BTN_WEST },
+@@ -258,6 +260,8 @@ static void phyhandheld_poll(struct input_dev *input)
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT1, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_J1_SW, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_J2_SW, input);
+ 
+ 	/* D-pad: report as hat axes (matches Xbox/xpad convention for SDL2) */
+ 	if(button_changed & (PHYHANDHELD_BUT5 | PHYHANDHELD_BUT7)) {
+@@ -290,28 +294,6 @@ static void phyhandheld_poll(struct input_dev *input)
+ 		}
+ 	}
+ 
+-	if(button_changed & PHYHANDHELD_J2_SW) {
+-		if(data.button_state & PHYHANDHELD_J2_SW) {
+-			input_report_abs(input, ABS_RZ, 0xfff);
+-			dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J2_SW pressed\n");
+-		}
+-		else {
+-			input_report_abs(input, ABS_RZ, 0x0);
+-			dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J2_SW released\n");
+-		}
+-	}
+-
+-	if(button_changed & PHYHANDHELD_J1_SW) {
+-		if(data.button_state & PHYHANDHELD_J1_SW) {
+-			input_report_abs(input, ABS_Z, 0xfff);
+-			dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J1_SW pressed\n");
+-		}
+-		else {
+-			input_report_abs(input, ABS_Z, 0x0);
+-			dev_dbg(&input->dev, "phyhandheld_poll: PHYHANDHELD_J1_SW released\n");
+-		}
+-	}
+-
+ 	input_report_abs(input, ABS_X, data.j1_ad1);
+ 	input_report_abs(input, ABS_Y, data.j1_ad2);
+ 	input_report_abs(input, ABS_RX, data.j2_ad1);
+@@ -361,6 +343,8 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_BUT, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT1, input);
+ 	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_R_BUT, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_J1_SW, input);
++	phyhandheld_button_handler(data.button_state, button_changed, PHYHANDHELD_J2_SW, input);
+ 
+ 	/* D-pad: report as hat axes (matches Xbox/xpad convention for SDL2) */
+ 	if(button_changed & (PHYHANDHELD_BUT5 | PHYHANDHELD_BUT7)) {
+@@ -393,28 +377,6 @@ static irqreturn_t phyhandheld_irq_thread(int irq, void *pdata)
+ 		}
+ 	}
+ 
+-	if(button_changed & PHYHANDHELD_J2_SW) {
+-		if(data.button_state & PHYHANDHELD_J2_SW) {
+-			input_report_abs(input, ABS_RZ, 0xfff);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW pressed\n");
+-		}
+-		else {
+-			input_report_abs(input, ABS_RZ, 0x0);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J2_SW released\n");
+-		}
+-	}
+-
+-	if(button_changed & PHYHANDHELD_J1_SW) {
+-		if(data.button_state & PHYHANDHELD_J1_SW) {
+-			input_report_abs(input, ABS_Z, 0xfff);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW pressed\n");
+-		}
+-		else {
+-			input_report_abs(input, ABS_Z, 0x0);
+-			dev_dbg(&input->dev, "phyhandheld_irq_thread: PHYHANDHELD_J1_SW released\n");
+-		}
+-	}
+-
+ 	input_report_abs(input, ABS_RX, 0xfff - data.j1_ad1);
+ 	input_report_abs(input, ABS_RY, 0xfff - data.j1_ad2);
+ 	input_report_abs(input, ABS_X, 0xfff - data.j2_ad1);
+@@ -488,11 +450,9 @@ static int phyhandheld_probe(struct i2c_client *client)
+ 	input_set_abs_params(phyhandheld->input_dev, ABS_HAT0X, -1, 1, 0, 0);
+ 	input_set_abs_params(phyhandheld->input_dev, ABS_HAT0Y, -1, 1, 0, 0);
+ 
+-	/* Joystick click buttons reported as trigger axes */
+-	input_set_abs_params(phyhandheld->input_dev, ABS_Z,
+-			     0, PHYHANDHELD_JOYSTICK_MAX_AXIS, 0, 0);
+-	input_set_abs_params(phyhandheld->input_dev, ABS_RZ,
+-			     0, PHYHANDHELD_JOYSTICK_MAX_AXIS, 0, 0);
++	/* Joystick click buttons (J1_SW, J2_SW) are registered as
++	 * BTN_THUMBL / BTN_THUMBR via the sparse keymap below —
++	 * matching the Xbox/xpad convention for stick clicks. */
+ 
+ 	err = sparse_keymap_setup(phyhandheld->input_dev, phyhandheld_buttons_new, NULL);
+ 	if (err) {
+-- 
+2.43.0
+
