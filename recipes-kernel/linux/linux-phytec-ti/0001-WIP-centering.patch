@@ -1,0 +1,32 @@
+From 9419e2335a1c38c06395182d271b6f07813f2b34 Mon Sep 17 00:00:00 2001
+From: Nathan Morrisson <nmorrisson@phytec.com>
+Date: Thu, 5 Mar 2026 17:22:51 -0800
+Subject: [PATCH] WIP centering
+
+Signed-off-by: Nathan Morrisson <nmorrisson@phytec.com>
+---
+ drivers/input/joystick/phyhandheld.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/input/joystick/phyhandheld.c b/drivers/input/joystick/phyhandheld.c
+index 150a1ca47acf..5b72740ce085 100644
+--- a/drivers/input/joystick/phyhandheld.c
++++ b/drivers/input/joystick/phyhandheld.c
+@@ -191,10 +191,10 @@ static int phyhandheld_read_data5(struct i2c_client *client, struct phyhandheld_
+ 	data->j2_ad1 = be16_to_cpu(read_buf[3]);
+ 	data->j2_ad2 = be16_to_cpu(read_buf[4]);
+ 
+-	data->j1_ad1 = (be16_to_cpu(read_buf[1]) * 3) / 2;
+-	data->j1_ad2 = (be16_to_cpu(read_buf[2]) * 3) / 2;
+-	data->j2_ad1 = (be16_to_cpu(read_buf[3]) * 3) / 2;
+-	data->j2_ad2 = (be16_to_cpu(read_buf[4]) * 3) / 2;
++	data->j1_ad1 = (be16_to_cpu(read_buf[1]) * 3) / 2 - 1050;
++	data->j1_ad2 = (be16_to_cpu(read_buf[2]) * 3) / 2 - 1050;
++	data->j2_ad1 = (be16_to_cpu(read_buf[3]) * 3) / 2 - 1050;
++	data->j2_ad2 = (be16_to_cpu(read_buf[4]) * 3) / 2 - 1050;
+ 
+ 	return 0;
+ }
+-- 
+2.43.0
+

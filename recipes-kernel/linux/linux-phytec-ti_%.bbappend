@@ -19,6 +19,8 @@ SRC_URI:append = " \
 	file://0001-drivers-input-joystick-phyhandheld.c-use-HATS-for-d-.patch \
 	file://0001-drivers-input-joystick-phyhandheld-makes-stick-butto.patch \
 	file://0001-WIP-swap-buttons-1-and-0.patch \
+	file://0001-WIP-centering.patch \
+	file://0001-WIP-deadzone.patch \
 "
 
 
