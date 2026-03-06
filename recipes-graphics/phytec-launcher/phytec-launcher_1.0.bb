@@ -7,7 +7,6 @@ SRC_URI = "git://github.com/phytec-labs/phytec-handheld-launcher.git;protocol=ht
            file://phytec-launcher.service \
            file://phytec-launcher-start.sh \
            file://retroarch.cfg \
-           file://PHYTEC-Handheld-One-Gamepad.cfg \
            file://PHYTEC-Handheld-One-Gamepad-udev.cfg \
            https://fileshare.phytec.com/index.php/s/dKCqzTGdNkBTCN5/download/how-we-built-this.mp4;name=video \
            file://neverballrc \
@@ -82,10 +81,6 @@ do_install() {
     install -d ${D}${sysconfdir}/retroarch
     install -m 0644 ${WORKDIR}/retroarch.cfg \
                 ${D}${sysconfdir}/retroarch/retroarch.cfg
-
-    install -d ${D}${datadir}/retroarch/autoconfig/sdl2
-    install -m 0644 ${WORKDIR}/PHYTEC-Handheld-One-Gamepad.cfg \
-                ${D}${datadir}/retroarch/autoconfig/sdl2/PHYTEC-Handheld-One-Gamepad.cfg
 
     install -d ${D}${datadir}/retroarch/autoconfig/udev
     install -m 0644 ${WORKDIR}/PHYTEC-Handheld-One-Gamepad-udev.cfg \
